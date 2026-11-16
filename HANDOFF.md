@@ -145,3 +145,9 @@ Installare Fedora (serve spazio: ridurre D:, in attesa di conferma), poi lavorar
 - Alternativa definitiva da Windows, solo con la conferma dell'utente: decifrare D: (`manage-bde -off D:`). Con la chiave in chiaro la cifratura attuale non protegge comunque i dati.
 - Avvio rapido di Windows: `HiberbootEnabled=1` ma `hiberfil.sys` non esiste, quindi non blocca i volumi.
 - **Aggiornamento 16/11 ore 23:18**: su richiesta esplicita, D: decifrato da Windows (`manage-bde -off D:`). Verificato: "Decrittografia completata", 0%, nessuna versione BitLocker; ora è NTFS in chiaro e Fedora lo apre direttamente. C: invariato (BitLocker con chiave in chiaro, lo apre `autorun-root.sh`). Se in futuro Windows attiva la cifratura del dispositivo (accesso con account Microsoft), D: può essere cifrato di nuovo.
+
+## 14. CentroAI anche per Linux (16/11 notte)
+- `D:\CentroAI\Installa-CentroAI-Linux.sh`: installer per Fedora e Ubuntu (aarch64 e x86_64). Da Linux: `bash <cartella CentroAI>/Installa-CentroAI-Linux.sh`. Programmi in `app-linux/`, comandi in `bin-linux/` e in `~/.local/bin`, configurazione di Claude in `data/claude-linux/` (regole, skill e hook presi da quella di Windows; login e plugin separati).
+- Provato in WSL Ubuntu 26.04 ARM64: Claude Code 2.1.326, Node v26.13.1, gh 2.104.0, opencode 2.3.0, plugin ponytail e superpowers. Non provato su Fedora né su NTFS montato da Linux.
+- Sostituisce `4-CLAUDE-CODE.sh` quando D: è montato: i programmi sono già scaricati, serve la rete solo per il login.
+- Hook resi compatibili con Linux: `image_read_as_text.py` (tesseract), `pdf_read_as_text.py` (pdftotext facoltativo).
