@@ -136,3 +136,11 @@ Vedi punto 11 e `audio-auto/REVERSE-AUDIO-WINDOWS.md` punto 5. Catena PipeWire a
 
 ### Ordine consigliato
 Installare Fedora (serve spazio: ridurre D:, in attesa di conferma), poi lavorare su audio e webcam da Fedora installata con Claude (`bash 4-CLAUDE-CODE.sh`), dove si può misurare con il microfono e riavviare per provare.
+
+## 13. Dischi di Windows da Fedora (16/11 notte)
+- Problema riferito dall'utente: D: non si apre da Fedora.
+- Causa (**visto**): `nvme0n1p3` (C:) e `nvme0n1p4` (D:) sono volumi BitLocker (`lsblk` nella diagnostica). In Windows lo stato è 7, "in attesa di attivazione": cifrati, con la chiave in chiaro sul disco e nessuna password.
+- Rimedio nella live: `avvio/autorun-root.sh` apre da solo i volumi BitLocker con `cryptsetup open --type bitlk` (la chiave in chiaro non richiede password: **visto** nel sorgente `lib/bitlk/bitlk.c` di cryptsetup). Compaiono come `/dev/mapper/win-nvme0n1p3` e `win-nvme0n1p4`, apribili da Dolphin. Esito scritto in `log/autorun.log`. **Non provato sul portatile.**
+- Non fatto: la stessa cosa per Fedora installata (serve una voce in `/etc/crypttab`, da aggiungere in `dopo-anaconda.sh`).
+- Alternativa definitiva da Windows, solo con la conferma dell'utente: decifrare D: (`manage-bde -off D:`). Con la chiave in chiaro la cifratura attuale non protegge comunque i dati.
+- Avvio rapido di Windows: `HiberbootEnabled=1` ma `hiberfil.sys` non esiste, quindi non blocca i volumi.

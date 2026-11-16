@@ -16,7 +16,15 @@ for d in /run/user/*; do
     sudo -u "$u" XDG_RUNTIME_DIR="$d" systemctl --user restart wireplumber filter-chain 2>/dev/null
 done
 bash "$KIT/avvio/audio-ampli.sh"
-sleep 40   # lascia partire il desktop e i driver
+# Windows cifra C: e D: tenendo la chiave in chiaro sul disco (BitLocker "in attesa di attivazione"):
+# cryptsetup li apre senza password e in Dolphin compaiono come dischi normali. Il timeout evita blocchi.
+# shortcut: vale solo per la live; su Fedora installata serve una voce in /etc/crypttab, da aggiungere con l'installazione.
+for d in $(blkid -t TYPE=BitLocker -o device 2>/dev/null); do
+    n="win-${d##*/}"
+    [ -e "/dev/mapper/$n" ] || echo x | timeout 30 cryptsetup open --type bitlk --key-file - "$d" "$n"
+    echo "BitLocker $d -> /dev/mapper/$n: $([ -e "/dev/mapper/$n" ] && echo aperto || echo NON aperto)"
+done
+sleep 40  # lascia partire il desktop e i driver
 bash "$KIT/1-DIAGNOSTICA.sh" --auto > /dev/null
 echo "diagnostica fatta $(date)"
 sync
