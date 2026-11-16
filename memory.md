@@ -32,3 +32,6 @@
 
 - Audio Windows: la taratura Lenovo degli altoparlanti sta nel modulo DSP 0x0701000B, parametro 0x0800137B (incrocio 2400 Hz); il sottografo 0xB0000003 non è la catena della musica.
 - Righe rosse all avvio della live (cdsp_dtbs.elf, pmic_glink, gen70500_sqe.fw, qcom-apm CMD timeout): innocue.
+
+- Tastiera e touch confermati dall utente sul portatile (prima voce del menu, 16/11).
+- Webcam: sensore OV02C10; driver presenti nel kernel Fedora 7.2.11, manca il device tree (camcc, cci, camss, sensore). Riferimento funzionante: aruhier/linux-slim7x-x1e.

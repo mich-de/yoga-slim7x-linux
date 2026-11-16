@@ -115,3 +115,24 @@ Dettagli in `audio-auto/REVERSE-AUDIO-WINDOWS.md` punto 5. In breve: la prima pa
 1. Utente: dire se tasti e suono funzionavano; decidere la riduzione di D:; installare Fedora dalla prima voce.
 2. Sotto Linux: provare il compander WSA884x spento (UCM) con misura al microfono; capire i canali delle curve Lenovo e portarle in PipeWire senza alzare i guadagni.
 3. Commit nuovi solo locali in `D:\linux\repo`: il push richiede la conferma dell'utente.
+
+## 12. Esito dell'utente e webcam (16/11 notte)
+Confermato dall'utente sul portatile, con la prima voce del menu: **tastiera e touch (gesture) funzionano**. Audio "non come in Windows". Webcam non funziona.
+
+### Webcam: causa (visto)
+- Sensore: OV02C10 (INF di Windows `qccamfrontsensor*`, e alberi del kernel non ufficiali).
+- Kernel Fedora 7.2.11: i driver ci sono (`qcom-camss` con `qcom,x1e80100-camss`, `ov02c10`, `i2c-qcom-cci`, `CONFIG_CLK_X1E80100_CAMCC=m`); libcamera 0.7.2 presente nella live.
+- Manca il device tree: nel DTB del Yoga non esistono `camcc`, `cci`, `camss` né il sensore; nessun DTB `x1e*`/`x1p*` del kernel 7.2.11 ha un sensore `ovti,ov02*`; nel kernel ufficiale (ricerca su GitHub, ramo principale) nessun dts contiene `ovti,ov02`.
+- Descrizione funzionante fuori dal kernel ufficiale: `aruhier/linux-slim7x-x1e` (ramo `custom/7.3.3`, aggiornato il 09/11/2026) e `endlessm/linux`. Cablaggio dal loro dts: sensore su `cci1` bus 1, indirizzo 0x36, reset `tlmm 237`, clock `CAM_CC_MCLK4_CLK` a 19,2 MHz, alimentazioni `vreg_l7b_2p8`, `vreg_l1m_1p2`, `vreg_l3m_1p8`, `csiphy4`, 2 corsie dati, 400 MHz, pin con funzione `cam_aon`.
+- Quell'albero usa nodi `csiphy4` separati (driver camss modificato). **Dedotto**: i suoi nodi non vanno bene così come sono per il driver del kernel 7.2.11; va seguito il binding `qcom,x1e80100-camss.yaml` del kernel in uso.
+
+### Strade per la webcam
+1. Aggiungere al DTB (stesso meccanismo della correzione tastiera) `camcc`, `cci1`, `camss` secondo il binding del kernel in uso, più il sensore con il cablaggio qui sopra. È sviluppo, con prove sul portatile sotto Linux. Rischio: tensioni dei regolatori sbagliate possono danneggiare il sensore, quindi copiare i valori esatti dall'albero funzionante. Il DTB cresce: la sostituzione in posto usata per la tastiera non basta, va rifatta la sezione `.dtbauto` del kernel o usato un DTB esterno.
+2. Usare il kernel `aruhier/linux-slim7x-x1e` (da compilare; Secure Boot da rivedere).
+3. Aspettare il kernel ufficiale.
+
+### Audio
+Vedi punto 11 e `audio-auto/REVERSE-AUDIO-WINDOWS.md` punto 5. Catena PipeWire attuale (`audio/50-yoga-altoparlanti.conf`): incrocio woofer/tweeter a 3000 Hz, passa-alto a 110 Hz. Taratura Lenovo: incrocio a 2400 Hz e due curve di equalizzazione.
+
+### Ordine consigliato
+Installare Fedora (serve spazio: ridurre D:, in attesa di conferma), poi lavorare su audio e webcam da Fedora installata con Claude (`bash 4-CLAUDE-CODE.sh`), dove si può misurare con il microfono e riavviare per provare.

@@ -9,3 +9,4 @@ Testo della sessione live recuperato: `HANDOFF-sessione-live-16.30-recuperato.md
 
 ## 16/11 notte
 Primo avvio reale riuscito (desktop, driver della tastiera, touch multitocco, audio configurato). Mancano: conferma su tasti e suono, riduzione di D: (in attesa di conferma), installazione. Seconda passata di reverse fatta: HANDOFF.md punto 11.
+Esito utente: tastiera e touch OK, audio non come Windows, webcam non funziona (causa e strade: HANDOFF.md punto 12).
