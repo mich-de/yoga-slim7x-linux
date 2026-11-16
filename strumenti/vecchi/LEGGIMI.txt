@@ -1,0 +1,6 @@
+Script superati, tenuti solo come riferimento. NON servono piu'.
+Partivano da ipotesi sbagliate sulla tastiera (driver hid_lenovo, reinizializzazione, sospensione):
+la causa vera e' il bus I2C a 400 kHz, la correzione e' portarlo a 100 kHz
+(voce GRUB "FIX TASTIERA", 5-FIX-TASTIERA-SUBITO.sh, 12-TASTIERA-FIX-PERMANENTE.sh).
+5-AUDIO-TEST-LIVE.sh: superato, nella live l'audio parte gia' da solo.
+Questi script usano ../lib/comune.sh: per lanciarli vanno riportati nella cartella principale.

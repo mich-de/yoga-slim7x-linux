@@ -1,0 +1,53 @@
+SECURE BOOT ATTIVO CON WINDOWS + LINUX - Lenovo Yoga Slim 7x (83ED)
+
+FATTI VERIFICATI (2026-11-16)
+  - Firmware di fabbrica: nel db ci sono solo "Microsoft Windows Production PCA 2011" e "Windows UEFI CA 2023".
+    Manca "Microsoft UEFI CA 2023" (terze parti): per questo nessun Linux firmato parte con Secure Boot attivo.
+  - Il BIOS non permette di caricare certificati da file. Ha solo: Secure Boot on/off, Reset to Setup Mode,
+    Restore Factory Keys.
+  - Stato attuale: e' stato fatto "Reset to Setup Mode" -> PK, KEK e db VUOTI, Secure Boot disattivato.
+  - Lo shim di Fedora 45 (EFI/BOOT/BOOTAA64.EFI) e' firmato da "Microsoft UEFI CA 2023"; GRUB e kernel sono
+    firmati da Fedora e li verifica lo shim. Quindi basta avere quel certificato nel db: niente chiavi personali.
+  - Windows ha gia' il pacchetto ufficiale firmato che lo aggiunge:
+    C:\Windows\System32\SecureBootUpdates\DBUpdate3P2023.bin
+
+PROCEDURA CONSIGLIATA (ufficiale Microsoft, nessuna chiave personale)
+  0. Installa prima Fedora con Secure Boot disattivato e verifica che parta.
+  1. BIOS (F2) > Security > Restore Factory Keys  (rimette PK, KEK, db e dbx di fabbrica). Salva.
+  2. Avvia Windows. PowerShell come amministratore, dalla cartella windows\ di questa partizione:
+       .\secureboot-stato.ps1                          (controllo: BitLocker non protetto, chiavi presenti)
+       .\secureboot-aggiungi-uefi-ca-2023.ps1          (solo controlli)
+       .\secureboot-aggiungi-uefi-ca-2023.ps1 -Conferma
+     Riavvia Windows una volta e ricontrolla con secureboot-stato.ps1: nel [db] deve comparire
+     "Microsoft UEFI CA 2023".
+  3. BIOS > Security > Secure Boot = Enabled. Verifica che partano Windows e Fedora.
+  Tornare indietro: BIOS > Secure Boot = Disabled (non si perde nulla).
+  Nota: con Secure Boot attivo la voce Ventoy non parte (su ARM64 non e' firmata); la chiavetta Fedora
+  scritta "raw" invece si' (usa lo stesso shim firmato). Il menu GRUB personalizzato resta valido.
+  Stato: procedura NON ancora provata su questo portatile. Fonte del meccanismo: Microsoft KB5068202
+  https://support.microsoft.com/help/5068202
+
+METODO ALTERNATIVO (se Windows non aggiunge il certificato)
+  Il firmware e' gia' in Setup Mode: si possono registrare chiavi proprie + quelle Microsoft da Linux.
+    sbctl create-keys ; sbctl enroll-keys --microsoft      (sbctl non e' nei repository di Fedora 45: va compilato
+                                                            o preso da una fonte fidata)
+  oppure con efitools: creare PK/KEK propri e mettere nel db i certificati di questa cartella.
+  Attenzione: un aggiornamento del BIOS puo' ripristinare le chiavi di fabbrica.
+
+CERTIFICATI IN QUESTA CARTELLA (ufficiali Microsoft, impronte SHA-1 verificate)
+  MicrosoftUEFICA2023.cer                 B5EEB4A6706048073F0ED296E7F580A790B59EAA   db  (Linux: shim ARM64)
+  MicrosoftCorporationUEFICA2011.cer      46DEF63B5CE61CF8BA0DE2E6639C1019D0ED14F3   db  (vecchi shim x86, facoltativo)
+  WindowsUEFICA2023.cer                   45A0FA32604773C82433C3B7D59E7466B3AC0C67   db  (Windows, boot manager 2023)
+  MicrosoftWindowsProductionPCA2011.cer   580A6F4CC4E4B669B9EBDC1B2B3E087B80D0678D   db  (Windows, boot manager 2011)
+  MicrosoftCorporationKEKCA2011.cer       31590BFD89C9D74ED087DFAC66334B3931254B30   KEK
+  MicrosoftCorporationKEK2KCA2023.cer     459AB6FB5E284D272D5E3E6ABC8ED663829D632B   KEK
+
+ATTENZIONE: SECURE BOOT E CORREZIONE DELLA TASTIERA NON STANNO INSIEME (per ora)
+  La tastiera interna funziona solo con il bus I2C a 100 kHz. Oggi questo si ottiene con un kernel modificato
+  (voce GRUB "FIX TASTIERA", script 12) o con moduli non firmati (i2cslow2): con Secure Boot attivo lo shim
+  rifiuta il kernel modificato, il comando "devicetree" di GRUB e' disabilitato e i moduli non firmati non
+  si caricano. Quindi, finche' la correzione non entra nel kernel ufficiale (segnalazione pronta in upstream/),
+  con Secure Boot attivo la tastiera interna non funziona. Scelte possibili:
+    a) tenere Secure Boot disattivato (situazione attuale);
+    b) Secure Boot attivo con chiavi proprie, firmando da se' il kernel corretto a ogni aggiornamento (sbctl);
+    c) aspettare un kernel Fedora che contenga la correzione.

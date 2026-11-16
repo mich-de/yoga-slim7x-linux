@@ -1,0 +1,10 @@
+{
+  "format_version": "1.0.0",
+  "change_version": "2",
+  "change_date": "2025-01-08 03:46:20",
+  "source": "2.0.5.0",
+  "import": "operator_settings_lenovo_edu.json",
+  "settings": {
+    "override_device_volume": true
+  }
+}

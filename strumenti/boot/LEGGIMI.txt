@@ -1,0 +1,41 @@
+AVVIO - menu della chiavetta Fedora, kernel corretto, automatismi
+
+FILE
+  linux-7.2.11-300.fc45-kbd100k.efi
+      Kernel 7.2.11-300.fc45 della ISO Fedora 45 con UNA modifica: nel device tree del Yoga Slim 7x incorporato
+      nel file, la frequenza del bus I2C b80000 (tastiera e touchpad) e' 100 kHz invece di 400 kHz.
+      Differisce dall'originale per 3 byte; il device tree al suo interno e' identico, byte per byte, a
+      fix-tastiera/yoga7x-kbd100k.dtb (quello della correzione provata a caldo sul portatile).
+      Fatto con: python3 tools/patch-dtb-i2c100k.py linux --out linux-7.2.11-300.fc45-kbd100k.efi
+      Non ha piu' una firma valida: parte solo con Secure Boot disattivato.
+  grub.cfg         copia di EFI/BOOT/grub.cfg della partizione EFI della chiavetta (partizione 2, FAT, 30 MB,
+                   offset 3508396032). Li' ci sono anche grub.cfg.orig (ISO) e le copie grub.cfg.bak-*.
+  strumenti.cpio   initrd aggiuntivo (copia di /strumenti.cpio sulla partizione EFI). Contiene una cartella
+                   /updates: la live di Fedora ne copia da sola il contenuto nel sistema avviato (script
+                   20-apply-live-updates.sh di dracut). Dentro:
+                     - strumenti.service + drop-in di multi-user.target: monta STRUMENTI in /run/strumenti e
+                       lancia avvio/autorun-root.sh (audio automatico e diagnostica)
+                     - avvio automatico per l'utente: uscita audio "Altoparlanti potenziati" predefinita
+                     - post-script per il programma di installazione (/usr/share/anaconda/post-scripts):
+                       a fine installazione lancia avvio/dopo-anaconda.sh sul sistema installato
+                   Tutta la logica sta su STRUMENTI (cartella avvio/), quindi si aggiorna senza rifare il cpio.
+                   Nota: il servizio e' attivato con un drop-in e non con un collegamento in *.wants, perche'
+                   al primo avvio systemd applica i preset di Fedora e toglie quei collegamenti.
+
+VOCI DEL MENU
+  1. TUTTO AUTOMATICO (tastiera, touchpad, audio)   predefinita: kernel corretto + automatismi (enforcing=0)
+  2. solo FIX TASTIERA (senza automatismi)          kernel corretto, nient'altro
+  3. FIX TASTIERA con device tree esterno           kernel originale + "devicetree"; potrebbe non avere effetto
+  4. senza fix                                      come la ISO con i parametri X1E; poi 5-FIX-TASTIERA-SUBITO.sh
+  5. TUTTO AUTOMATICO - messaggi di avvio visibili  come la 1 senza "quiet rhgb"
+  6. voce originale della ISO                       senza alcun parametro
+
+PARAMETRI DEL KERNEL (guida Fedora Snapdragon_WoA_Laptop_Install)
+  clk_ignore_unused pd_ignore_unused        sempre, su tutti i portatili X Elite / X Plus
+  systemd.tpm2_wait=0                       evita 90 secondi di attesa del TPM
+  modprobe.blacklist=qcom_q6v5_pas          consigliato per avviare da USB-C. Nella live del 16/11, con questo
+                                            parametro, il coprocessore ADSP risultava comunque in esecuzione e
+                                            l'audio funzionava. Sul sistema installato viene tolto.
+  enforcing=0                               SELinux permissivo nella sola sessione live: serve ai file iniettati
+                                            dall'initrd aggiuntivo. Il sistema installato resta con SELinux attivo.
+Nel menu di GRUB la tastiera e' americana:  _ = Maiusc + '    = = tasto i' accentata

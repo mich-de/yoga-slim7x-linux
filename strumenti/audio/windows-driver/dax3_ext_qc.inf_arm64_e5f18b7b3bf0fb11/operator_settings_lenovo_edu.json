@@ -1,0 +1,10 @@
+{
+  "format_version": "1.0.0",
+  "change_version": "2",
+  "change_date": "2025-01-08 03:15:53",
+  "source": "2.0.5.0",
+  "import": "operator_settings_lenovo_capture.json",
+  "settings": {
+    "show_online_course_button": true
+  }
+}

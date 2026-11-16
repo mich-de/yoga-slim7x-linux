@@ -1,0 +1,4 @@
+Pacchetti driver audio Qualcomm/Dolby presi dal Windows di questo portatile (export del 2026-11-15,
+cartella D:\Driver_Lenovo_Yoga_Slim_7_14Q8X9_83ED\export), copiati qui il 2026-11-16 perche' dalla live il disco D: non e' leggibile.
+Servono solo per studio (calibrazione e protezione degli altoparlanti): non si installano su Linux.
+Non copiati per dimensione: effetti Elevoc, Voice Clarity e servizio Dolby (circa 125 MB), restano nell'export.

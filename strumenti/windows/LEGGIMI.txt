@@ -1,0 +1,13 @@
+SCRIPT WINDOWS (PowerShell come amministratore; UAC e' disattivato su questo PC: partono subito)
+
+Se PowerShell blocca gli script:  powershell -ExecutionPolicy Bypass -File .\NOME.ps1 [opzioni]
+
+scrivi-iso-su-usb.ps1                 scrive una ISO raw su un disco USB e ne verifica lo SHA-256. CANCELLA il disco.
+                                      Controlli: disco USB, non di sistema, nome che contiene -Modello. Senza -Conferma non scrive.
+secureboot-stato.ps1                  sola lettura: Secure Boot, Setup Mode, certificati in PK/KEK/db, BitLocker.
+secureboot-aggiungi-uefi-ca-2023.ps1  aggiunge al db il certificato che fa partire Linux con Secure Boot attivo
+                                      (meccanismo ufficiale Windows). Senza -Conferma fa solo i controlli.
+                                      Procedura completa: ..\secureboot\LEGGIMI.txt
+
+Driver e firmware Windows esportati: D:\Driver_Lenovo_Yoga_Slim_7_14Q8X9_83ED  (174 pacchetti)
+ISO Fedora verificata: D:\linux\Fedora-KDE-Desktop-Live-45-1.4.aarch64.iso

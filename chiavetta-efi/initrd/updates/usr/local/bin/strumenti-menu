@@ -1,0 +1,7 @@
+#!/bin/sh
+# Apre il menu grafico degli strumenti (file sulla partizione STRUMENTI).
+MP=/run/strumenti
+i=0
+while [ ! -f "$MP/avvio/menu-utente.sh" ] && [ "$i" -lt 60 ]; do i=$((i + 1)); sleep 2; done
+[ -f "$MP/avvio/menu-utente.sh" ] && exec /bin/bash "$MP/avvio/menu-utente.sh"
+exit 0

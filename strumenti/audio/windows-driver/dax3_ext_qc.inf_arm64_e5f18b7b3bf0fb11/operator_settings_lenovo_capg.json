@@ -1,0 +1,25 @@
+{
+  "format_version": "1.0.0",
+  "change_version": "7",
+  "change_date": "2025-04-23 05:11:50",
+  "source": "2.0.5.0",
+  "import": "operator_settings_lenovo_default.json",
+  "settings": {
+    "bt_support": {
+      "known_devices": [
+        {
+          "name": "Lenovo E310",
+          "hwid": "BTHENUM\\{0000110b-0000-1000-8000-00805f9b34fb}_VID&000117ef_PID&a086"
+        },
+        {
+          "name": "Lenovo TWS YOGA PC Edition",
+          "hwid": "BTHENUM\\{0000110b-0000-1000-8000-00805f9b34fb}_VID&000117ef_PID&a07c"
+        },
+        {
+          "name": "Lenovo Wireless Stereo Headset",
+          "hwid": "BTHENUM\\{0000110b-0000-1000-8000-00805f9b34fb}_VID&000117ef_PID&a085"
+        }
+      ]
+    }
+  }
+}

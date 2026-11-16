@@ -1,0 +1,21 @@
+FIRMWARE Qualcomm per il Lenovo Yoga Slim 7x (83ED)
+
+Percorso Linux: /usr/lib/firmware/updates/qcom/x1e80100/LENOVO/83ED/   (installa: sudo bash 8-INSTALLA-FIRMWARE.sh)
+I nomi sono quelli richiesti dal device tree del kernel (firmware-name) e sono gli stessi di linux-firmware.
+
+Origine: DriverStore del Windows 11 di QUESTO portatile (C:\Windows\System32\DriverStore\FileRepository),
+copia piu' recente di ogni file, il 2026-11-16. Elenco con pacchetto di origine: origine-windows.csv
+  qcadsp8380.mbn, adsp_dtbs.elf, adspr.jsn, adsps.jsn, adspua.jsn, battmgr.jsn
+        coprocessore ADSP: audio e gestione batteria        (ADSP.HT.5.9-00831-HAMOA-1, driver 2.0.4513.4501 del 2026-05-08)
+  qccdsp8380.mbn, cdsp_dtbs.elf, cdspr.jsn
+        coprocessore CDSP                                   (CDSP.HT.2.9.c1-00075-HAMOA-1, pacchetto NPU 30.0.216.0)
+  qcdxkmsuc8380.mbn   GPU Adreno X1-85 (zap shader)
+  qcvss8380.mbn       decodifica/codifica video (iris)
+  qcav1e8380.mbn      codec AV1 (presente in linux-firmware per questo modello)
+Da linux-firmware (kernel.org), installati solo se la distro non li ha:
+  qcom/gen70500_sqe.fw, qcom/gen70500_gmu.bin, qcom/x1e80100/gen70500_zap.mbn   firmware generici della GPU Adreno
+Origine linux-firmware (kernel.org), scaricata il 2026-11-16:
+  X1E80100-LENOVO-Yoga-Slim7x-tplg.bin   topologia audio; l'installatore la copia solo se la distro non ce l'ha.
+
+Sono firmware proprietari Qualcomm/Lenovo estratti dalla tua copia di Windows: uso personale su questo portatile.
+Controllo integrita': SHA256SUMS in questa cartella  (da Linux: cd firmware && sha256sum -c SHA256SUMS)

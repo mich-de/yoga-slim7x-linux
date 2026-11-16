@@ -1,0 +1,13 @@
+{
+  "format_version": "1.0.0",
+  "change_version": "2",
+  "change_date": "2024-12-11 09:08:28",
+  "source": "2.0.5.0",
+  "import": "operator_settings_lenovo_default.json",
+  "settings": {
+    "detachable_speaker": {
+      "is_supported": true,
+      "hwid": "USB\\VID_0BDA&PID_4F28&MI_00;USB\\VID_17EF&PID_484F&MI_00"
+    }
+  }
+}

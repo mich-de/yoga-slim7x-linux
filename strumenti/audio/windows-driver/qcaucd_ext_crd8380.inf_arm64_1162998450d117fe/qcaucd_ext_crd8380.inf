@@ -1,0 +1,120 @@
+;Copyright (c) 2023 Qualcomm Technologies, Inc.  All Rights Reserved.
+;
+;Module Name:
+;    qcaucd_ext_CRD.inx
+;
+;Abstract:
+;    Extenstion INX file for installing the Audio Codec Driver
+;
+;Installation Notes: 
+;    
+;
+;--*/
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Extension
+ClassGUID={e2f84ce7-8efa-411c-aa69-97454ca4cb57}
+Provider=%QCOM%
+ExtensionId={A882D99B-2BB1-484C-B438-A24B8B506686}
+; Extensionid differs for each inx file;
+DriverVer = 11/13/2025,1.0.4458.2601
+CatalogFile=qcaucd_ext_CRD_8380.cat
+PnpLockDown=1
+
+[SourceDisksNames]
+1 = %DiskId1%
+
+[DestinationDirs]
+ASLBinFile = 13
+
+[ASLBinFile]
+ACDResources.bin
+
+[SourceDisksFiles]
+ACDResources.bin = 1
+
+[Manufacturer]
+%ExtMfg%=Extensions,NTARM64.10.0...16299
+
+[Extensions.NTARM64.10.0...16299]
+%DeviceDesc% = Extension_Device,ADCM\VEN_QCOM&DEV_0CC1&SUBSYS_IDEA4001
+; ADCM is the parent of this inf
+%DeviceDesc% = Extension_Device,ADCM\VEN_QCOM&DEV_0CC1&SUBSYS_IDEA4002
+; ADCM is the parent of this inf
+
+[Extension_Device.HW]
+Addreg=AUDDReg
+
+[Extension_Device]
+CopyFiles=ASLBinFile
+
+[AUDDReg]
+HKR,AUCD\ASLResourceFile,"BinaryPath",%REG_SZ%,%13%\ACDResources.bin
+; EM feature disable/enable toggle
+HKR,AUCD,"IsEMFeatureEnabled",%REG_DWORD%,1
+HKR,AUCD,"AddSpeakerDisableLatencyMS",%REG_DWORD%,0x0
+HKR,AUCD,"SwrClockStopTimerMS",%REG_DWORD%,0x1F4
+;Number of GPIOS and their UIDs,indexes and initial values. GPIOIds are read from ACPI by the driver.
+HKR,AUCD\GPIO,"NoofGPIOs",%REG_DWORD%,0x00000003
+HKR,AUCD\GPIO\1,"GPIOUID",%REG_DWORD%,0x00000000
+HKR,AUCD\GPIO\1,"INDEX",%REG_DWORD%,0x00000000
+HKR,AUCD\GPIO\1,"INITIALVALUE",%REG_DWORD%,0x00000000
+HKR,AUCD\GPIO\2,"GPIOUID",%REG_DWORD%,0x00000001
+HKR,AUCD\GPIO\2,"INDEX",%REG_DWORD%,0x00000001
+HKR,AUCD\GPIO\2,"INITIALVALUE",%REG_DWORD%,0x00000000
+HKR,AUCD\GPIO\3,"GPIOUID",%REG_DWORD%,0x00000002
+HKR,AUCD\GPIO\3,"INDEX",%REG_DWORD%,0x00000002
+HKR,AUCD\GPIO\3,"INITIALVALUE",%REG_DWORD%,0x00000000
+HKR,AUCD\CodecInitializationParameters,"MajorVersion",%REG_DWORD%,0x00000000
+HKR,AUCD\CodecInitializationParameters,"MinorVersion",%REG_DWORD%,0x00000002
+HKR,AUCD\CodecInitializationParameters,"IsWDSPAvailable",%REG_DWORD%,0x00000000
+; Disable MBHC since WCD is removed
+HKR,AUCD\CodecInitializationParameters,"IsMBHCReq",%REG_DWORD%,0x00000000
+;Number of slaves and their types and interfaces. Type:WSA-0,WCD-1. Interfaces:None-0,I2C-1, SWR-2
+;SlaveConnectionType for WSA : INTERNAL BOOST = 1 , EXTERNAL BOOST = 2
+;NumSlaveTypes from 3 to 2, to remove WCD macro
+HKR,AUCD\CodecInitializationParameters\SlaveInfo,"NumSlaveTypes",%REG_DWORD%,0x00000002
+;WSA macro 1 
+;Value 1 represents enable for SlaveEnableStatus
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\1,"SlaveType",%REG_DWORD%,0x00000000
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\1,"SlaveInterface",%REG_DWORD%,0x00000002
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\1,"SlaveInstance",%REG_DWORD%,0x00000000
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\1,"SlaveConnectionType",%REG_DWORD%,0x00000001
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\1,"SlaveEnableStatus",%REG_DWORD%,0x00000001
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\1\DeviceInfo,"SlaveDevicesAttached",%REG_DWORD%,0x00000000
+;WCD slave - removed
+;Value 1 represents enable for SlaveEnableStatus
+;HKR,AUCD\CodecInitializationParameters\SlaveInfo\2,"SlaveType",%REG_DWORD%,0x00000001
+;HKR,AUCD\CodecInitializationParameters\SlaveInfo\2,"SlaveInterface",%REG_DWORD%,0x00000002
+;HKR,AUCD\CodecInitializationParameters\SlaveInfo\2,"SlaveInstance",%REG_DWORD%,0x00000000
+;HKR,AUCD\CodecInitializationParameters\SlaveInfo\2,"SlaveConnectionType",%REG_DWORD%,0x00000000
+;HKR,AUCD\CodecInitializationParameters\SlaveInfo\2,"SlaveEnableStatus",%REG_DWORD%,0x00000001
+;HKR,AUCD\CodecInitializationParameters\SlaveInfo\2\DeviceInfo,"SlaveDevicesAttached",%REG_DWORD%,0x00000000
+;WSA macro 2 - change to Slave Index 2, for WCD is removed
+;Value 1 represents enable for SlaveEnableStatus
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\2,"SlaveType",%REG_DWORD%,0x00000000
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\2,"SlaveInterface",%REG_DWORD%,0x00000002
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\2,"SlaveInstance",%REG_DWORD%,0x00000001
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\2,"SlaveConnectionType",%REG_DWORD%,0x00000001
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\2,"SlaveEnableStatus",%REG_DWORD%,0x00000001
+HKR,AUCD\CodecInitializationParameters\SlaveInfo\2\DeviceInfo,"SlaveDevicesAttached",%REG_DWORD%,0x00000000
+;Number of Slaves of the same type need not be specified here. It is handled internally by the driver (CHM).
+HKR,AUCD\CodecInitializationParameters,"SwrSleep",%REG_DWORD%,0x00000001
+;Enable if external Mic Bias is needed - we need this for micbias
+HKR,AUCD\CodecInitializationParameters,"ExternalMicBiasNeeded",%REG_DWORD%,0x00000001
+;Interrupts count and IDs. 0- WAKEUP_INTERRUPT, 1-SWR_TX, 2-SWR_RX, 3-SWR_WSA, 4 - SWR_WSA2
+HKR,AUCD\InterruptInfo, "NoofInterrupts",%REG_DWORD%,0x00000005
+HKR,AUCD\InterruptInfo\1, "InterruptID",%REG_DWORD%,0x00000000
+HKR,AUCD\InterruptInfo\2, "InterruptID",%REG_DWORD%,0x00000001
+HKR,AUCD\InterruptInfo\3, "InterruptID",%REG_DWORD%,0x00000002
+HKR,AUCD\InterruptInfo\4, "InterruptID",%REG_DWORD%,0x00000003
+HKR,AUCD\InterruptInfo\5, "InterruptID",%REG_DWORD%,0x00000004
+
+[Strings]
+REG_SZ                = 0x00000000
+REG_DWORD			  = 0x00010001
+QCOM = "Qualcomm Technologies, Inc."
+ExtMfg = "(Extension system devices)"
+DeviceDesc = "Qualcomm(R) Aqstic(TM) Audio Codec Driver CRD Pkg"
+DiskId1 = "Qualcomm Audio Device Installation Disk"

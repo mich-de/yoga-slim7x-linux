@@ -1,0 +1,16 @@
+#!/bin/sh
+# Bootstrap iniettato nella live da strumenti.cpio (meccanismo /updates di dracut dmsquash-live).
+# Monta la partizione STRUMENTI in /run/strumenti e avvia avvio/autorun-root.sh da li'.
+# Tutta la logica sta sulla chiavetta: questo file non va piu' toccato. Non blocca mai l'avvio.
+MP=/run/strumenti
+mkdir -p "$MP"
+i=0
+while [ "$i" -lt 40 ]; do
+    mountpoint -q "$MP" && break
+    dev=$(blkid -c /dev/null -L STRUMENTI 2>/dev/null)
+    [ -n "$dev" ] && mount -t vfat -o rw,umask=000,utf8 "$dev" "$MP" 2>/dev/null && break
+    i=$((i + 1)); sleep 3
+done
+mountpoint -q "$MP" || exit 0
+[ -f "$MP/avvio/autorun-root.sh" ] && exec /bin/bash "$MP/avvio/autorun-root.sh"
+exit 0

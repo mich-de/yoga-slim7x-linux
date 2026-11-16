@@ -1,0 +1,75 @@
+rebind 0-0014 (/sys/bus/i2c/drivers/i2c_hid_of)
+rebind 1-002c (/sys/bus/i2c/drivers/i2c_hid_of)
+N: Name="gpio-keys"
+H: Handlers=event0 
+N: Name="pmic_pwrkey"
+H: Handlers=kbd event5 
+N: Name="X1E80100-LENOVO-Yoga-Slim7x Headset Jack"
+H: Handlers=kbd event6 
+N: Name="iClever IC-BK10 Keyboard"
+H: Handlers=sysrq kbd leds event7 
+N: Name="hid-over-i2c 27C6:0123"
+H: Handlers=mouse2 event2 
+N: Name="hid-over-i2c 27C6:0123 UNKNOWN"
+H: Handlers=event3 
+[   56.937347] Bluetooth: hci0: HFP non-HCI data transport is supported
+[   56.952321] Bluetooth: BNEP (Ethernet Emulation) ver 1.3
+[   56.952326] Bluetooth: BNEP filters: protocol multicast
+[   56.952330] Bluetooth: BNEP socket layer initialized
+[   57.012602] Bluetooth: hci0: AOSP extensions version v0.98
+[   57.012609] Bluetooth: hci0: AOSP quality report is supported
+[   57.015904] Bluetooth: MGMT ver 1.23
+[   57.765661] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   58.789779] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   59.814712] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   60.391617] qcom-apm gprsvc:service:2:1: CMD timeout for [1001021] opcode
+[   60.392283] platform 6800000.remoteproc:glink-edge:gpr:service@1:dais: Adding to iommu group 16
+[   60.413712] wsa_macro 6aa0000.codec: Driver needs fixing: Unsorted reg_defaults, sorting the copy
+[   60.414077] wsa_macro 6b00000.codec: Driver needs fixing: Unsorted reg_defaults, sorting the copy
+[   60.414432] rx_macro 6ac0000.codec: Driver needs fixing: Unsorted reg_defaults, sorting the copy
+[   60.415061] wsa_macro 6aa0000.codec: using zero-initialized flat cache, this may cause unexpected behavior
+[   60.415342] soundwire sdw:4:0:0217:0204:00:0: no matching ACPI device found, ignoring peripheral
+[   60.415415] soundwire sdw:4:0:0217:0204:00:1: no matching ACPI device found, ignoring peripheral
+[   60.520836] soundwire sdw:1:0:0217:0204:00:0: no matching ACPI device found, ignoring peripheral
+[   60.521395] soundwire sdw:1:0:0217:0204:00:1: no matching ACPI device found, ignoring peripheral
+[   60.529444] snd-x1e80100 sound: ASoC: Parent card not yet available, widget card binding deferred
+[   60.533006] ALSA: Control name 'stream1.vol_ctrl1 MultiMedia2 Playback Volume' truncated to 'stream1.vol_ctrl1 MultiMedia2 Playback Volu'
+[   60.533371] input: X1E80100-LENOVO-Yoga-Slim7x Headset Jack as /devices/platform/sound/sound/card0/input12
+[   60.840047] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   61.861877] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   62.885688] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   63.911685] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   64.935818] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   65.959793] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   66.981758] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   68.005882] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   69.029831] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   70.055663] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   71.077770] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   72.103711] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   73.127662] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   81.112113] Bluetooth: RFCOMM TTY layer initialized
+[   81.117148] Bluetooth: RFCOMM socket layer initialized
+[   81.122442] Bluetooth: RFCOMM ver 1.11
+[   88.942898] msm_dpu ae01000.display-controller: [drm:adreno_request_fw [msm]] loaded qcom/gen70500_sqe.fw from new location
+[   88.968389] msm_dpu ae01000.display-controller: [drm:adreno_request_fw [msm]] loaded qcom/gen70500_gmu.bin from new location
+[   88.982678] [drm] Loaded GMU firmware v4.3.17
+[   90.791708] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   91.815658] i2c_hid_of 1-002c: failed to set a report to device: -110
+[   92.837744] i2c_hid_of 1-002c: failed to set a report to device: -110
+[  388.278707] input: iClever IC-BK10 Keyboard as /devices/virtual/misc/uhid/0005:04E8:7021.0003/input/input13
+[  388.327201] hid-generic 0005:04E8:7021.0003: input,hidraw2: BLUETOOTH HID v1.1b Keyboard [iClever IC-BK10 Keyboard] on 2c:9c:58:e6:cc:6e
+[  388.907816] input: iClever IC-BK10 Keyboard as /devices/virtual/misc/uhid/0005:04E8:7021.0003/input/input14
+[  388.949163] samsung 0005:04E8:7021.0003: input,hidraw2: BLUETOOTH HID v1.1b Keyboard [iClever IC-BK10 Keyboard] on 2c:9c:58:e6:cc:6e
+[  478.336167] i2c_hid_of 0-0014: supply vdd not found, using dummy regulator
+[  478.343325] i2c_hid_of 0-0014: supply vddl not found, using dummy regulator
+[  478.542849] input: hid-over-i2c 27C6:0123 as /devices/platform/soc@0/ac0000.geniqup/a80000.i2c/i2c-0/0-0014/0018:27C6:0123.0004/input/input15
+[  478.556217] input: hid-over-i2c 27C6:0123 UNKNOWN as /devices/platform/soc@0/ac0000.geniqup/a80000.i2c/i2c-0/0-0014/0018:27C6:0123.0004/input/input16
+[  478.570232] hid-multitouch 0018:27C6:0123.0004: input,hidraw1: I2C HID v1.00 Device [hid-over-i2c 27C6:0123] on 0-0014
+[  481.701776] i2c_hid_of 1-002c: failed to set a report to device: -110
+[  482.727708] i2c_hid_of 1-002c: failed to set a report to device: -110
+[  483.751688] i2c_hid_of 1-002c: failed to set a report to device: -110
+[  484.779568] i2c_hid_of 1-002c: failed to change power setting.
+[  485.821899] i2c_hid_of 1-002c: supply vdd not found, using dummy regulator
+[  485.829019] i2c_hid_of 1-002c: supply vddl not found, using dummy regulator
+Ricevuto:   -> la tastiera FUNZIONA dopo il rebind

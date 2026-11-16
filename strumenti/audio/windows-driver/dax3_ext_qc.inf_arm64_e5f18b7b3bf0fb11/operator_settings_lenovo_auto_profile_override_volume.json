@@ -1,0 +1,107 @@
+{
+  "format_version": "1.0.0",
+  "change_version": "4",
+  "change_date": "2025-08-08 01:45:23",
+  "source": "2.0.5.0",
+  "import": "operator_settings_lenovo_capture.json",
+  "settings": {
+    "auto_profile": {
+      "show_auto_profile_button": true,
+      "auto_profile_enabled": true,
+      "applications": [
+        {
+          "priority": 1,
+          "mapping": [
+            {
+              "name": "bluejeans.exe",
+              "profile": "Voice"
+            }
+          ]
+        },
+        {
+          "priority": 2,
+          "mapping": [
+            {
+              "name": "wmplayer.exe",
+              "profile": "Dynamic"
+            },
+            {
+              "name": "music.ui.exe",
+              "profile": "Music"
+            },
+            {
+              "name": "video.ui.exe",
+              "profile": "Movie"
+            },
+            {
+              "name": "vlc.exe",
+              "profile": "Dynamic"
+            },
+            {
+              "name": "dolbyuwp.exe",
+              "profile": "Movie"
+            },
+            {
+              "name": "spotify.exe",
+              "profile": "Music"
+            },
+            {
+              "name": "hulu.gibson.exe",
+              "profile": "Movie"
+            },
+            {
+              "name": "95FE1D22.VUDUMoviesandTV_0wkekwh8d6p78!App",
+              "profile": "Movie"
+            },
+            {
+              "name": "PandoraMediaInc.29680B314EFC2_n619g4d5j0fnw!App",
+              "profile": "Music"
+            },
+            {
+              "name": "4DF9E0F8.Netflix_mcm4njqhnhss8!Netflix.App",
+              "profile": "Movie"
+            },
+            {
+              "name": "SmartRemote.exe",
+              "profile": "Movie"
+            },
+            {
+              "name": "Microsoft.Media.Player.exe",
+              "profile": "music"
+            }
+          ]
+        },
+        {
+          "priority": 3,
+          "mapping": [
+            {
+              "name": "microsoftedgecp.exe",
+              "profile": "Dynamic"
+            },
+            {
+              "name": "microsoftedgebchost.exe",
+              "profile": "Dynamic"
+            },
+            {
+              "name": "msedge.exe",
+              "profile": "Dynamic"
+            },
+            {
+              "name": "chrome.exe",
+              "profile": "Dynamic"
+            },
+            {
+              "name": "iexplore.exe",
+              "profile": "Dynamic"
+            },
+            {
+              "name": "facebook.exe",
+              "profile": "Dynamic"
+            }
+          ]
+        }
+      ]
+    },
+    "override_device_volume": true
+  }
+}

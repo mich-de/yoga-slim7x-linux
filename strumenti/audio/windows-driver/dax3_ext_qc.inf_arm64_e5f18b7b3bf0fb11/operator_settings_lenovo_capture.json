@@ -1,0 +1,42 @@
+{
+  "format_version": "1.0.0",
+  "change_version": "1",
+  "change_date": "2025-01-08 02:51:52",
+  "source": "2.0.5.0",
+  "import": "operator_settings_lenovo_default.json",
+  "settings": {
+    "capture_stream": {
+      "condition": "voip",
+      "capture_stream_detection_enable": true,
+      "applications": [
+        "lync.exe",
+        "qq.exe",
+        "qq.launch.exe",
+        "skype.exe",
+        "skypehost.exe",
+        "skype4life.exe",
+        "skypeapp.exe",
+        "teams.exe",
+        "msteams.exe",
+        "wechat.exe",
+        "wechatstore.exe",
+        "micromsg.exe",
+        "line.exe",
+        "line_app.exe",
+        "whatsapp.exe",
+        "viber.exe",
+        "viber.universal.exe",
+        "imodesktopapp.exe",
+        "winuapentry.exe",
+        "icq.exe",
+        "twitter.windows.exe",
+        "implusw8.exe",
+        "zoom.exe",
+        "ms-teams.exe",
+        "wemeetapp.exe",
+        "tblive.exe",
+        "feishu.exe"
+      ]
+    }
+  }
+}

@@ -1,0 +1,53 @@
+# Fedora 45 KDE live - menu con voci per Lenovo Yoga Slim 7x (X1E)
+# Parametri: wiki Fedora Snapdragon_WoA_Laptop_Install
+search --file --set=root /boot/0xbedbb5cb
+set prefix=($root)/boot/grub2
+
+set default="0"
+function load_video {
+	insmod efi_gop
+	insmod efi_uga
+	insmod video_bochs
+	insmod video_cirrus
+	insmod all_video
+}
+set basicgfx="nomodeset"
+set x1e="clk_ignore_unused pd_ignore_unused systemd.tpm2_wait=0 modprobe.blacklist=qcom_q6v5_pas"
+
+load_video
+set gfxpayload=keep
+insmod gzio
+insmod part_gpt
+insmod ext2
+
+terminal_input console
+terminal_output console
+
+set timeout=10
+set timeout_style=menu
+
+menuentry "Start Fedora-KDE-Live - Yoga Slim 7x (X1E)" --class fedora --class gnu-linux --class gnu --class os {
+	linux ($root)/boot/aarch64/loader/linux quiet rhgb  root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image ${x1e}
+	initrd ($root)/boot/aarch64/loader/initrd
+}
+menuentry "Start Fedora-KDE-Live - Yoga Slim 7x (X1E) - log visibile" --class fedora --class gnu-linux --class gnu --class os {
+	linux ($root)/boot/aarch64/loader/linux root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image ${x1e}
+	initrd ($root)/boot/aarch64/loader/initrd
+}
+menuentry "Diagnostica I2C tastiera (senza driver i2c-hid)" --class fedora --class gnu-linux --class gnu --class os {
+	linux ($root)/boot/aarch64/loader/linux root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image ${x1e} initcall_blacklist=i2c_hid_of_driver_init
+	initrd ($root)/boot/aarch64/loader/initrd
+}
+menuentry "Start Fedora-KDE-Desktop-Live (originale)" --class fedora --class gnu-linux --class gnu --class os {
+	linux ($root)/boot/aarch64/loader/linux quiet rhgb  root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image
+	initrd ($root)/boot/aarch64/loader/initrd
+}
+submenu "Troubleshooting -->" {
+	menuentry "Start Fedora-KDE-Desktop-Live in basic graphics mode" --class fedora --class gnu-linux --class gnu --class os {
+		linux ($root)/boot/aarch64/loader/linux quiet rhgb  root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image ${basicgfx} ${x1e}
+		initrd ($root)/boot/aarch64/loader/initrd
+	}
+	menuentry "Menu originale della ISO" {
+		configfile ($root)/boot/grub2/grub.cfg
+	}
+}

@@ -1,0 +1,92 @@
+To: linux-arm-msm@vger.kernel.org
+Cc: Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, linux-input@vger.kernel.org
+Subject: Yoga Slim 7x (x1e80100): keyboard/touchpad dead with BIOS NHCN62WW, I2C bus hangs at 400 kHz
+
+Hi,
+
+on my Lenovo Yoga Slim 7x the internal keyboard never works and the
+touchpad stops working a few seconds after boot. Lowering the bus
+frequency of i2c0 (b80000.i2c) from 400 kHz to 100 kHz fixes both.
+Since the upstream DTS works for other people at 400 kHz, I would like
+to know whether anyone else sees this with a recent BIOS before sending
+a proper patch.
+
+Hardware / software
+  Lenovo Yoga Slim 7x 14Q8X9, machine type 83ED (DMI: LENOVO 83ED/LNVNB161216)
+  BIOS NHCN62WW 12/02/2025
+  Fedora 45 KDE live, kernel 7.2.11-300.fc45.aarch64
+  cmdline: clk_ignore_unused pd_ignore_unused
+  DTB: x1e80100-lenovo-yoga-slim7x.dtb shipped with that kernel
+  gcc_qupv3_wrap0_s0_clk: 32 MHz; measured bus speed about 330 kHz
+  (4000-byte read from the touchpad takes ~109 ms)
+
+Symptoms (stock DTB, 400 kHz)
+  [    6.75] input: hid-over-i2c 04F3:3303 Touchpad as .../i2c-1/1-002c/...
+  [    7.78] i2c_hid_of 1-003a: failed to change power setting.
+  [   10.85] i2c_hid_of 1-003a: failed to change power setting.
+  [   18.02] i2c_hid_of 1-003a: can't add hid device: -110
+  [   18.03] i2c_hid_of 1-003a: probe with driver i2c_hid_of failed with error -110
+  [   22.56] i2c_hid_of 1-002c: failed to get a report from device: -110
+  [   26.66] i2c_hid_of 1-002c: failed to set a report to device: -110   (repeats)
+
+  After that SDA (TLMM GPIO0) is stuck low, SCL (GPIO1) is high, and
+  i2cdetect finds nothing on the bus. The IRQ lines (GPIO67 keyboard,
+  GPIO3 touchpad) are idle high. No regulator is being disabled.
+
+Analysis
+  With i2c-hid autoprobe disabled and the bus recovered by hand, the
+  keyboard HID descriptor read through geni-i2c at 400 kHz is
+  reproducibly corrupted after 16 bytes (byte 17 is 0x22 shifted right
+  by one bit, then 0xff):
+
+    i2ctransfer -y 1 w2@0x3a 0x01 0x00 r30
+    1e 00 00 01 b0 00 21 00 24 00 18 00 25 00 40 00 11 ff ff ff ff ff
+    ff ff ff ff ff ff ff ff
+
+  The same read bit-banged slowly over the two GPIOs (geni-i2c unbound)
+  is valid:
+
+    1e 00 00 01 b0 00 21 00 24 00 18 00 25 00 40 00 22 00 23 00 8d 04
+    87 89 03 00 00 00 00 00
+    (wCommandRegister 0x0022, wDataRegister 0x0023, 048D:8987, ver 3)
+
+  The touchpad descriptor reads fine both ways. So i2c-hid ends up with
+  wCommandRegister = 0xff11 and writes SET_POWER there; the ITE
+  controller is then left mid-transfer. Clocking SCL by hand shows a
+  slave that ACKs every 9th clock (pattern 111111110 repeating), i.e. it
+  still believes it is receiving a write. After two or three more reads
+  the keyboard starts NACKing its address and SDA gets stuck again.
+
+  A third 400 kHz read after two successful (truncated) ones returned
+  -ENXIO and left SDA low.
+
+Fix tested
+  Changing clock-frequency of /soc@0/geniqup@bc0000/i2c@b80000 to 100000
+  and re-probing geni-i2c:
+
+    input: hid-over-i2c 04F3:3303 Touchpad as .../1-002c/...
+    i2c_hid_of 1-003a: device did not ack reset within 1000 ms
+    input: hid-over-i2c 048D:8987 Keyboard as .../1-003a/...
+    lenovo 0018:048D:8987.0008: input,hidraw3: I2C HID v1.00 Keyboard
+
+  Both devices stay up, the bus no longer hangs, and typing on the
+  internal keyboard and using the touchpad both work.
+
+Limits of this report
+  - Single machine.
+  - The 100 kHz setting was applied at runtime (property replaced in the
+    live tree, geni-i2c rebound); a cold boot with a patched DTB is still
+    to be confirmed.
+  - Only 400 kHz and 100 kHz were tried, no intermediate value.
+  - I do not know which bus speed Windows uses (ACPI QTEC0001/QTEC0002).
+
+Questions
+  - Does anyone else with BIOS NHCN62WW (or newer) see this?
+  - Is 100 kHz on i2c0 acceptable for this board, or is there a better
+    fix (pin drive strength / pull-ups, geni timing at 32 MHz)?
+
+An RFC patch that just lowers the frequency is attached below / in a
+follow-up mail. I can test patches and provide full dmesg.
+
+Thanks,
+OdissREA

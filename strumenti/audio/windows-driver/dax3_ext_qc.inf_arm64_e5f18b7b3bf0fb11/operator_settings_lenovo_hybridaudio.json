@@ -1,0 +1,12 @@
+{
+  "format_version": "1.0.0",
+  "change_version": "1",
+  "change_date": "2023-11-23 15:21:33",
+  "source": "2.0.5.0",
+  "import": "operator_settings_lenovo_default.json",
+  "settings": {
+    "hybridaudio": {
+      "is_supported": true
+    }
+  }
+}

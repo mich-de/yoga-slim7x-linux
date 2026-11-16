@@ -1,0 +1,76 @@
+rtcwake: cannot open /sys/class/rtc/rtc0/device/power/wakeup: No such file or directory
+rtcwake: /dev/rtc0 not enabled for wakeup events
+rtcwake: assuming RTC uses UTC ...
+N: Name="gpio-keys"
+H: Handlers=event0 
+N: Name="pmic_pwrkey"
+H: Handlers=kbd event5 
+N: Name="X1E80100-LENOVO-Yoga-Slim7x Headset Jack"
+H: Handlers=kbd event6 
+N: Name="hid-over-i2c 27C6:0123"
+H: Handlers=mouse2 event2 
+N: Name="hid-over-i2c 27C6:0123 UNKNOWN"
+H: Handlers=event3 
+N: Name="iClever IC-BK10 Keyboard"
+H: Handlers=sysrq kbd leds event1 
+[  521.892927] CPU1 is up
+[  521.893034] Detected PIPT I-cache on CPU2
+[  521.893041] GICv3: CPU2: found redistributor 200 region 0:0x0000000017100000
+[  521.893201] CPU2: Booted secondary processor 0x0000000200 [0x512f0011]
+[  521.893450] CPU2 is up
+[  521.893559] Detected PIPT I-cache on CPU3
+[  521.893567] GICv3: CPU3: found redistributor 300 region 0:0x0000000017140000
+[  521.893727] CPU3: Booted secondary processor 0x0000000300 [0x512f0011]
+[  521.893992] CPU3 is up
+[  521.896020] Detected PIPT I-cache on CPU4
+[  521.896047] GICv3: CPU4: found redistributor 10000 region 0:0x0000000017180000
+[  521.896245] CPU4: Booted secondary processor 0x0000010000 [0x511f0011]
+[  521.897097] CPU4 is up
+[  521.897215] Detected PIPT I-cache on CPU5
+[  521.897224] GICv3: CPU5: found redistributor 10100 region 0:0x00000000171c0000
+[  521.897383] CPU5: Booted secondary processor 0x0000010100 [0x511f0011]
+[  521.897720] CPU5 is up
+[  521.897835] Detected PIPT I-cache on CPU6
+[  521.897846] GICv3: CPU6: found redistributor 10200 region 0:0x0000000017200000
+[  521.898008] CPU6: Booted secondary processor 0x0000010200 [0x511f0011]
+[  521.898356] CPU6 is up
+[  521.898474] Detected PIPT I-cache on CPU7
+[  521.898485] GICv3: CPU7: found redistributor 10300 region 0:0x0000000017240000
+[  521.898647] CPU7: Booted secondary processor 0x0000010300 [0x511f0011]
+[  521.899040] CPU7 is up
+[  521.901067] Detected PIPT I-cache on CPU8
+[  521.901098] GICv3: CPU8: found redistributor 20000 region 0:0x0000000017280000
+[  521.901294] CPU8: Booted secondary processor 0x0000020000 [0x511f0011]
+[  521.902297] CPU8 is up
+[  521.902410] Detected PIPT I-cache on CPU9
+[  521.902423] GICv3: CPU9: found redistributor 20100 region 0:0x00000000172c0000
+[  521.902585] CPU9: Booted secondary processor 0x0000020100 [0x511f0011]
+[  521.903020] CPU9 is up
+[  521.903134] Detected PIPT I-cache on CPU10
+[  521.903147] GICv3: CPU10: found redistributor 20200 region 0:0x0000000017300000
+[  521.903307] CPU10: Booted secondary processor 0x0000020200 [0x511f0011]
+[  521.903745] CPU10 is up
+[  521.903865] Detected PIPT I-cache on CPU11
+[  521.903880] GICv3: CPU11: found redistributor 20300 region 0:0x0000000017340000
+[  521.904040] CPU11: Booted secondary processor 0x0000020300 [0x511f0011]
+[  521.904490] CPU11 is up
+[  521.978500] mhi mhi0: Requested to power ON
+[  521.978509] mhi mhi0: Power on setup success
+[  522.057638] mhi mhi0: Wait for device to enter SBL or Mission mode
+[  522.441878] ath12k_wifi7_pci 0004:01:00.0: qmi dma allocation failed (7274496 B type 1), will try later with small size
+[  522.449706] nvme nvme0: D3 entry latency set to 10 seconds
+[  522.449712] ath12k_wifi7_pci 0004:01:00.0: chip_id 0x2 chip_family 0x4 board_id 0xff soc_id 0x40170200
+[  522.449715] ath12k_wifi7_pci 0004:01:00.0: fw_version 0x1103006c fw_build_timestamp 2026-03-06 09:10 fw_build_id QC_IMAGE_VERSION_STRING=WLAN.HMT.1.1.c7-00108-QCAHMTSWPL_V1.0_V2.0_SILICONZ_UPSTREAM-3
+[  522.492892] nvme nvme0: 12/0/0 default/read/poll queues
+[  522.642575] hwmon hwmon66: PM: parent phy0 should not be sleeping
+[  522.655737] PM: resume devices took 0.224 seconds
+[  523.072310] OOM killer enabled.
+[  523.075561] Restarting tasks: Starting
+[  523.080099] Restarting tasks: Done
+[  523.083784] efivarfs: resyncing variable state
+[  523.089130] input: iClever IC-BK10 Keyboard as /devices/virtual/misc/uhid/0005:04E8:7021.0005/input/input17
+[  523.099734] samsung 0005:04E8:7021.0005: input,hidraw0: BLUETOOTH HID v1.1b Keyboard [iClever IC-BK10 Keyboard] on 2c:9c:58:e6:cc:6e
+[  523.203638] efivarfs: finished resyncing variable state
+[  523.209040] random: crng reseeded on system resumption
+[  523.215713] PM: suspend exit
+Ricevuto:   -> la tastiera FUNZIONA dopo la sospensione

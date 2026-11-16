@@ -1,0 +1,56 @@
+From 8b1b1df841c9bbca0a8724eb874d8cf22fb51b35 Mon Sep 17 00:00:00 2001
+From: OdissREA <mic.deangelis@gmail.com>
+Date: Mon, 16 Nov 2026 15:32:57 +0000
+Subject: [PATCH RFC] arm64: dts: qcom: x1e80100-lenovo-yoga-slim7x: run
+ keyboard/touchpad I2C at 100 kHz
+
+On a Yoga Slim 7x (83ED) with BIOS NHCN62WW (12/02/2025) the internal
+keyboard (ITE 048D:8987 at 0x3a) never probes and the touchpad (ELAN
+04F3:3303 at 0x2c) on the same bus dies a few seconds after boot:
+
+  i2c_hid_of 1-003a: failed to change power setting.
+  i2c_hid_of 1-003a: can't add hid device: -110
+  i2c_hid_of 1-002c: failed to get a report from device: -110
+
+At 400 kHz the keyboard controller returns a corrupted HID descriptor:
+the first 16 bytes are correct, byte 17 is shifted by one bit and the
+rest reads back as 0xff:
+
+  1e 00 00 01 b0 00 21 00 24 00 18 00 25 00 40 00 11 ff ff ff ...
+
+Reading the same descriptor slowly (GPIO bit-banging) gives valid data:
+
+  1e 00 00 01 b0 00 21 00 24 00 18 00 25 00 40 00 22 00 23 00
+  8d 04 87 89 03 00 00 00 00 00
+
+Because of the corruption i2c-hid uses 0xff11 as wCommandRegister
+instead of 0x0022. The SET_POWER write to that bogus register leaves
+the controller in the middle of a transfer holding SDA low, which
+takes the whole bus (and the touchpad) down until SCL is clocked
+manually.
+
+With the bus at 100 kHz both devices probe and work. Lower the bus
+frequency.
+
+Signed-off-by: OdissREA <mic.deangelis@gmail.com>
+Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>
+---
+ arch/arm64/boot/dts/qcom/x1e80100-lenovo-yoga-slim7x.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/x1e80100-lenovo-yoga-slim7x.dts b/arch/arm64/boot/dts/qcom/x1e80100-lenovo-yoga-slim7x.dts
+index a807744..84ee560 100644
+--- a/arch/arm64/boot/dts/qcom/x1e80100-lenovo-yoga-slim7x.dts
++++ b/arch/arm64/boot/dts/qcom/x1e80100-lenovo-yoga-slim7x.dts
+@@ -806,7 +806,7 @@
+ };
+ 
+ &i2c0 {
+-	clock-frequency = <400000>;
++	clock-frequency = <100000>;
+ 
+ 	status = "okay";
+ 
+-- 
+2.55.0
+

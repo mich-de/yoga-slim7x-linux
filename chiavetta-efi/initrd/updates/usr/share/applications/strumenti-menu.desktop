@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Strumenti Yoga Slim 7x
+Comment=Diagnostica, tastiera, audio
+Exec=/bin/sh /usr/local/bin/strumenti-menu
+Icon=applications-utilities
+Terminal=false
+Categories=System;

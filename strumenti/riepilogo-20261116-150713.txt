@@ -1,0 +1,37 @@
+Riepilogo hardware - Lenovo Yoga Slim 7x - 7.2.11-300.fc45.aarch64
+[OK] Device tree Yoga Slim 7x
+[OK] Tastiera interna (input kbd non pulsanti)
+[OK] Touchpad
+[OK] Touchscreen
+[OK] GPU Adreno (render node)
+[KO] GPU firmware caricato (no errori sqe/gmu)
+[OK] Retroilluminazione schermo
+[OK] Wi-Fi (interfaccia wlan)
+[OK] Bluetooth (hci0)
+[OK] Audio (scheda ALSA)
+[OK] Batteria
+[KO] Webcam (/dev/video*)
+[OK] USB host
+[KO] CPU frequency scaling
+[OK] Sensori termici
+[OK] Sospensione (mem_sleep)
+[KO] TPM
+[OK] Nessuna unit systemd fallita
+[--] remoteproc adsp: running
+[--] remoteproc cdsp: offline
+
+== Firmware mancanti
+msm_dpu ae01000.display-controller: Direct firmware load for qcom/gen70500_sqe.fw failed with error -2
+msm_dpu ae01000.display-controller: [drm:adreno_request_fw [msm]] *ERROR* failed to load gen70500_sqe.fw
+qcom_q6v5_pas 32300000.remoteproc: Direct firmware load for qcom/x1e80100/LENOVO/83ED/cdsp_dtbs.elf failed with error -2
+qcom_q6v5_pas 32300000.remoteproc: request_firmware failed for qcom/x1e80100/LENOVO/83ED/cdsp_dtbs.elf: -2
+remoteproc remoteproc1: Failed to load program segments: -2
+systemd[1]: systemd-boot-clear-sysfail.service - Clear SysFail Entry If The Boot Is Successful skipped, unmet condition check ConditionPathExists=/sys/firmware/efi/efivars/LoaderEntrySysFail-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
+
+== Unit systemd fallite
+
+== Errori driver (probe/deferred)
+i2c_hid_of 1-003a: probe with driver i2c_hid_of failed with error -110
+msm_dpu ae01000.display-controller: Direct firmware load for qcom/gen70500_sqe.fw failed with error -2
+qcom_q6v5_pas 32300000.remoteproc: Direct firmware load for qcom/x1e80100/LENOVO/83ED/cdsp_dtbs.elf failed with error -2
+snd-x1e80100 sound: ASoC: Parent card not yet available, widget card binding deferred

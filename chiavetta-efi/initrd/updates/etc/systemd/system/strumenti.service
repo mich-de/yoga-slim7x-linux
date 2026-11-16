@@ -1,0 +1,11 @@
+[Unit]
+Description=Monta la partizione STRUMENTI e raccoglie la diagnostica (Yoga Slim 7x)
+After=local-fs.target
+
+[Service]
+Type=simple
+ExecStart=/bin/sh /usr/local/bin/strumenti-mount
+TimeoutStopSec=5
+
+[Install]
+WantedBy=multi-user.target

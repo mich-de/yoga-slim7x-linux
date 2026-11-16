@@ -1,0 +1,10 @@
+{
+  "format_version": "1.0.0",
+  "change_version": "1",
+  "change_date": "2024-11-27 09:20:22",
+  "source": "2.0.5.0",
+  "import": "operator_settings_lenovo_capg.json",
+  "settings": {
+    "dual_screen_multi_mode": 4
+  }
+}

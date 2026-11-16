@@ -1,0 +1,74 @@
+rtcwake: cannot open /sys/class/rtc/rtc0/device/power/wakeup: No such file or directory
+rtcwake: /dev/rtc0 not enabled for wakeup events
+rtcwake: assuming RTC uses UTC ...
+N: Name="gpio-keys"
+H: Handlers=event0 
+N: Name="pmic_pwrkey"
+H: Handlers=kbd event5 
+N: Name="X1E80100-LENOVO-Yoga-Slim7x Headset Jack"
+H: Handlers=kbd event6 
+N: Name="hid-over-i2c 27C6:0123"
+H: Handlers=mouse2 event2 
+N: Name="hid-over-i2c 27C6:0123 UNKNOWN"
+H: Handlers=event3 
+[  585.951569] GICv3: CPU1: found redistributor 100 region 0:0x00000000170c0000
+[  585.951742] CPU1: Booted secondary processor 0x0000000100 [0x512f0011]
+[  585.952389] CPU1 is up
+[  585.952495] Detected PIPT I-cache on CPU2
+[  585.952503] GICv3: CPU2: found redistributor 200 region 0:0x0000000017100000
+[  585.952663] CPU2: Booted secondary processor 0x0000000200 [0x512f0011]
+[  585.952905] CPU2 is up
+[  585.953015] Detected PIPT I-cache on CPU3
+[  585.953022] GICv3: CPU3: found redistributor 300 region 0:0x0000000017140000
+[  585.953183] CPU3: Booted secondary processor 0x0000000300 [0x512f0011]
+[  585.953462] CPU3 is up
+[  585.955485] Detected PIPT I-cache on CPU4
+[  585.955511] GICv3: CPU4: found redistributor 10000 region 0:0x0000000017180000
+[  585.955710] CPU4: Booted secondary processor 0x0000010000 [0x511f0011]
+[  585.956603] CPU4 is up
+[  585.956719] Detected PIPT I-cache on CPU5
+[  585.956729] GICv3: CPU5: found redistributor 10100 region 0:0x00000000171c0000
+[  585.956891] CPU5: Booted secondary processor 0x0000010100 [0x511f0011]
+[  585.957245] CPU5 is up
+[  585.957367] Detected PIPT I-cache on CPU6
+[  585.957377] GICv3: CPU6: found redistributor 10200 region 0:0x0000000017200000
+[  585.957539] CPU6: Booted secondary processor 0x0000010200 [0x511f0011]
+[  585.957921] CPU6 is up
+[  585.958039] Detected PIPT I-cache on CPU7
+[  585.958050] GICv3: CPU7: found redistributor 10300 region 0:0x0000000017240000
+[  585.958212] CPU7: Booted secondary processor 0x0000010300 [0x511f0011]
+[  585.958617] CPU7 is up
+[  585.960644] Detected PIPT I-cache on CPU8
+[  585.960674] GICv3: CPU8: found redistributor 20000 region 0:0x0000000017280000
+[  585.960870] CPU8: Booted secondary processor 0x0000020000 [0x511f0011]
+[  585.961858] CPU8 is up
+[  585.961974] Detected PIPT I-cache on CPU9
+[  585.961986] GICv3: CPU9: found redistributor 20100 region 0:0x00000000172c0000
+[  585.962148] CPU9: Booted secondary processor 0x0000020100 [0x511f0011]
+[  585.962588] CPU9 is up
+[  585.962699] Detected PIPT I-cache on CPU10
+[  585.962713] GICv3: CPU10: found redistributor 20200 region 0:0x0000000017300000
+[  585.962872] CPU10: Booted secondary processor 0x0000020200 [0x511f0011]
+[  585.963330] CPU10 is up
+[  585.963451] Detected PIPT I-cache on CPU11
+[  585.963465] GICv3: CPU11: found redistributor 20300 region 0:0x0000000017340000
+[  585.963627] CPU11: Booted secondary processor 0x0000020300 [0x511f0011]
+[  585.964111] CPU11 is up
+[  586.036797] mhi mhi0: Requested to power ON
+[  586.036808] mhi mhi0: Power on setup success
+[  586.116612] mhi mhi0: Wait for device to enter SBL or Mission mode
+[  586.500735] ath12k_wifi7_pci 0004:01:00.0: qmi dma allocation failed (7274496 B type 1), will try later with small size
+[  586.507726] nvme nvme0: D3 entry latency set to 10 seconds
+[  586.508192] ath12k_wifi7_pci 0004:01:00.0: chip_id 0x2 chip_family 0x4 board_id 0xff soc_id 0x40170200
+[  586.508195] ath12k_wifi7_pci 0004:01:00.0: fw_version 0x1103006c fw_build_timestamp 2026-03-06 09:10 fw_build_id QC_IMAGE_VERSION_STRING=WLAN.HMT.1.1.c7-00108-QCAHMTSWPL_V1.0_V2.0_SILICONZ_UPSTREAM-3
+[  586.553969] nvme nvme0: 12/0/0 default/read/poll queues
+[  586.701054] hwmon hwmon66: PM: parent phy0 should not be sleeping
+[  586.711719] PM: resume devices took 0.221 seconds
+[  587.134093] OOM killer enabled.
+[  587.137343] Restarting tasks: Starting
+[  587.142857] Restarting tasks: Done
+[  587.146382] efivarfs: resyncing variable state
+[  587.257782] efivarfs: finished resyncing variable state
+[  587.263185] random: crng reseeded on system resumption
+[  587.281019] PM: suspend exit
+Ricevuto:   -> la tastiera FUNZIONA dopo la sospensione

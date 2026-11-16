@@ -1,0 +1,10 @@
+#!/bin/sh
+# Avvio automatico per l'utente della live: aspetta la partizione STRUMENTI e lancia avvio/utente-login.sh
+# (rende predefinita l'uscita audio "Altoparlanti potenziati").
+MP=/run/strumenti
+i=0
+while [ ! -f "$MP/avvio/utente-login.sh" ] && [ "$i" -lt 60 ]; do i=$((i + 1)); sleep 2; done
+i=0
+while [ ! -f /run/yoga-audio-pronto ] && [ "$i" -lt 60 ]; do i=$((i + 1)); sleep 2; done
+[ -f "$MP/avvio/utente-login.sh" ] && exec /bin/bash "$MP/avvio/utente-login.sh"
+exit 0

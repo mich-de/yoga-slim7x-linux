@@ -1,0 +1,12 @@
+{
+  "format_version": "1.0.0",
+  "change_version": "1",
+  "change_date": "2024-01-26 20:27:03",
+  "source": "2.0.5.0",
+  "import": "operator_settings_lenovo_override_volume.json",
+  "settings": {
+    "hybridaudio": {
+      "is_supported": true
+    }
+  }
+}

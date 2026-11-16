@@ -1,0 +1,37 @@
+driver controller: geni_i2c
+SDA prima: 0  SCL: 1
+impulso 1: SDA=1
+impulso 2: SDA=1
+impulso 3: SDA=1
+impulso 4: SDA=1
+impulso 5: SDA=1
+impulso 6: SDA=1
+impulso 7: SDA=1
+impulso 8: SDA=1
+impulso 9: SDA=0
+impulso 10: SDA=1
+SDA dopo: 1
+== dispositivi bus:
+1-002c
+1-003a
+[  483.751688] i2c_hid_of 1-002c: failed to set a report to device: -110
+[  484.779568] i2c_hid_of 1-002c: failed to change power setting.
+[  485.821899] i2c_hid_of 1-002c: supply vdd not found, using dummy regulator
+[  485.829019] i2c_hid_of 1-002c: supply vddl not found, using dummy regulator
+[  863.288670] i2c_hid_of 1-003a: supply vdd not found, using dummy regulator
+[  863.295789] i2c_hid_of 1-003a: supply vddl not found, using dummy regulator
+[  868.434648] i2c_hid_of 1-002c: supply vdd not found, using dummy regulator
+[  868.441774] i2c_hid_of 1-002c: supply vddl not found, using dummy regulator
+[ 1152.810809] i2c_hid_of 1-002c: supply vdd not found, using dummy regulator
+[ 1152.810854] i2c_hid_of 1-003a: supply vdd not found, using dummy regulator
+[ 1152.817938] i2c_hid_of 1-002c: supply vddl not found, using dummy regulator
+[ 1152.824979] i2c_hid_of 1-003a: supply vddl not found, using dummy regulator
+[ 1154.896409] i2c_hid_of 1-003a: failed to change power setting.
+[ 1155.919176] i2c_hid_of 1-002c: failed to reset device: -110
+[ 1157.967097] i2c_hid_of 1-002c: failed to change power setting.
+N: Name="gpio-keys"
+N: Name="pmic_pwrkey"
+N: Name="X1E80100-LENOVO-Yoga-Slim7x Headset Jack"
+N: Name="hid-over-i2c 27C6:0123"
+N: Name="hid-over-i2c 27C6:0123 UNKNOWN"
+N: Name="iClever IC-BK10 Keyboard"

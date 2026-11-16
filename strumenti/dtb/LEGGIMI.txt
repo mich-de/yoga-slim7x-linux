@@ -1,0 +1,19 @@
+DEVICE TREE del Lenovo Yoga Slim 7x
+
+x1e80100-lenovo-yoga-slim7x.dtb   ORIGINALE, estratto dal kernel 7.2.11-300.fc45.aarch64 della ISO Fedora 45
+                                  (model "Lenovo Yoga Slim 7x", compatible "lenovo,yoga-slim7x", "qcom,x1e80100").
+                                  Con questo la tastiera interna NON funziona su questo portatile (bus I2C a 400 kHz).
+../fix-tastiera/yoga7x-kbd100k.dtb  CORRETTO: stesso file con il bus I2C b80000 a 100 kHz. E' quello da usare.
+
+Correggere un altro .dtb o un kernel con device tree incorporati:
+  python3 ../tools/patch-dtb-i2c100k.py FILE --check        (mostra la frequenza)
+  python3 ../tools/patch-dtb-i2c100k.py FILE --out NUOVO
+oppure, con dtc installato:
+  fdtput -t u FILE.dtb /soc@0/geniqup@bc0000/i2c@b80000 clock-frequency 100000
+
+Quando serve un .dtb: Fedora (44+) e Ubuntu scelgono il device tree da soli (e' dentro il kernel). Altre distro
+lo vogliono indicato nel bootloader (GRUB: devicetree /percorso/file.dtb). Regola: partire dal .dtb del kernel
+che si avvia e correggerlo; questo file va bene solo per kernel 7.2.x.
+
+Nel device tree 7.2.11 mancano due modifiche del kernel piu' recente: il nodo dell'embedded controller
+(lenovo,yoga-slim7x-ec) e la riserva del GPIO 65 (linea di reset dell'EC, da non toccare).
