@@ -90,7 +90,8 @@ kbd_hid_driver() {
 
 # /dev/input/eventN della tastiera interna (blocco di /proc/bus/input/devices con "Keyboard" e bus 0018)
 kbd_event() {
-    awk 'BEGIN{RS=""} /Bus=0018/ && /Name="[^"]*[Kk]eyboard/ && /Handlers=[^\n]*kbd/ {
+    # con hid-lenovo il nome è "hid-over-i2c 048D:8987", senza "Keyboard": vale anche l'indirizzo I2C 0x3a
+    awk 'BEGIN{RS=""} /Bus=0018/ && (/Name="[^"]*[Kk]eyboard/ || /Sysfs=[^\n]*-003a\//) && /Handlers=[^\n]*kbd/ {
             if (match($0, /event[0-9]+/)) { print "/dev/input/" substr($0, RSTART, RLENGTH); exit } }' \
         "${1:-/proc/bus/input/devices}"
 }

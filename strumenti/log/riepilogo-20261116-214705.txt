@@ -1,0 +1,63 @@
+Riepilogo hardware - Lenovo Yoga Slim 7x - kernel 7.2.11-300.fc45.aarch64 - Fedora Linux 45 (KDE Plasma Desktop Edition)
+cmdline: BOOT_IMAGE=(hd0,gpt3)/boot/linux-7.2.11-300.fc45-kbd100k.efi quiet rhgb root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image clk_ignore_unused pd_ignore_unused systemd.tpm2_wait=0 modprobe.blacklist=qcom_q6v5_pas enforcing=0
+
+[OK] Device tree: Lenovo Yoga Slim 7x
+--- Tastiera / puntamento (funzionano solo con il bus I2C b80000 a 100 kHz)
+[OK] Bus I2C di tastiera e touchpad a 100 kHz (correzione attiva)
+[OK] Bus I2C senza blocchi (nessun errore -110)
+[OK] Tastiera: dispositivo I2C 0x3a presente
+[OK] Tastiera: driver I2C agganciato
+[OK] Tastiera: dispositivo HID creato
+[OK] Tastiera: driver HID agganciato (lenovo)
+[KO] Tastiera: dispositivo di input
+[OK] Touchpad
+[OK] Touchscreen
+--- Grafica
+[OK] GPU Adreno (render node)
+[KO] GPU: firmware caricato senza errori
+[OK] Retroilluminazione schermo
+--- Rete
+[OK] Wi-Fi (interfaccia wl*)
+[OK] Bluetooth (hci0)
+--- Audio / batteria (dipendono dal coprocessore ADSP)
+[OK] Firmware ADSP presente
+[OK] Firmware ADSP dtb presente
+[OK] ADSP in esecuzione
+[OK] Topologia audio presente
+[OK] Profilo ALSA UCM Slim 7x presente
+[OK] Scheda audio rilevata
+[KO] Audio: uscita 'Altoparlanti potenziati' attiva (6-AUDIO-PIU-FORTE)
+[OK] Audio: modulo guadagno amplificatori caricato (7-VOLUME-AMPLIFICATORI)
+[KO] Coprocessore CDSP in esecuzione
+[OK] Batteria
+--- Altro
+[KO] Webcam (/dev/video*)
+[KO] CPU frequency scaling
+[OK] Sensori termici
+[OK] Sospensione disponibile
+[KO] TPM
+[OK] Variabili EFI accessibili
+[OK] Nessuna unit systemd fallita
+
+[--] remoteproc adsp: running (fw: qcom/x1e80100/LENOVO/83ED/qcadsp8380.mbn)
+[--] remoteproc cdsp: offline (fw: qcom/x1e80100/LENOVO/83ED/qccdsp8380.mbn)
+
+== Tastiera: stato
+i2c=/sys/bus/i2c/devices/1-003a driver_i2c=i2c_hid_of
+hid=/sys/bus/i2c/devices/1-003a/0018:048D:8987.0003 driver_hid=lenovo
+input=
+moduli: hid_multitouch hid_lenovo 
+
+== Firmware mancanti
+msm_dpu ae01000.display-controller: Direct firmware load for qcom/gen70500_sqe.fw failed with error -2
+msm_dpu ae01000.display-controller: [drm:adreno_request_fw [msm]] *ERROR* failed to load gen70500_sqe.fw
+qcom_q6v5_pas 32300000.remoteproc: Direct firmware load for qcom/x1e80100/LENOVO/83ED/cdsp_dtbs.elf failed with error -2
+qcom_q6v5_pas 32300000.remoteproc: request_firmware failed for qcom/x1e80100/LENOVO/83ED/cdsp_dtbs.elf: -2
+remoteproc remoteproc1: Failed to load program segments: -2
+systemd[1]: systemd-boot-clear-sysfail.service - Clear SysFail Entry If The Boot Is Successful skipped, unmet condition check ConditionPathExists=/sys/firmware/efi/efivars/LoaderEntrySysFail-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
+
+== Unit systemd fallite
+
+== Errori dei driver
+msm_dpu ae01000.display-controller: Direct firmware load for qcom/gen70500_sqe.fw failed with error -2
+qcom_q6v5_pas 32300000.remoteproc: Direct firmware load for qcom/x1e80100/LENOVO/83ED/cdsp_dtbs.elf failed with error -2

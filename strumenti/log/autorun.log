@@ -1,0 +1,24 @@
+=== autorun Mon Nov 16 09:39:16 PM UTC 2026 - kernel 7.2.11-300.fc45.aarch64 - cmdline: BOOT_IMAGE=(hd0,gpt3)/boot/linux-7.2.11-300.fc45-kbd100k.efi quiet rhgb root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image clk_ignore_unused pd_ignore_unused systemd.tpm2_wait=0 modprobe.blacklist=qcom_q6v5_pas enforcing=0
+audio-sistema: destinazione /
+  /usr/lib64/ladspa/sc4_1882.so
+  /usr/lib64/ladspa/fast_lookahead_limiter_1913.so
+  /etc/pipewire/filter-chain.conf.d/50-yoga-altoparlanti.conf
+  /etc/wireplumber/wireplumber.conf.d/51-yoga-soft-mixer.conf
+  filter-chain attivo per tutti gli utenti
+  WooferLeft PA Volume = 18
+  WooferRight PA Volume = 18
+  TweeterLeft PA Volume = 16
+  TweeterRight PA Volume = 16
+diagnostica fatta Mon Nov 16 09:40:02 PM UTC 2026
+=== autorun Mon Nov 16 09:46:21 PM UTC 2026 - kernel 7.2.11-300.fc45.aarch64 - cmdline: BOOT_IMAGE=(hd0,gpt3)/boot/linux-7.2.11-300.fc45-kbd100k.efi quiet rhgb root=live:CDLABEL=Fedora-KDE-Live-45 rd.live.image clk_ignore_unused pd_ignore_unused systemd.tpm2_wait=0 modprobe.blacklist=qcom_q6v5_pas enforcing=0
+audio-sistema: destinazione /
+  /usr/lib64/ladspa/sc4_1882.so
+  /usr/lib64/ladspa/fast_lookahead_limiter_1913.so
+  /etc/pipewire/filter-chain.conf.d/50-yoga-altoparlanti.conf
+  /etc/wireplumber/wireplumber.conf.d/51-yoga-soft-mixer.conf
+  filter-chain attivo per tutti gli utenti
+  WooferLeft PA Volume = 18
+  WooferRight PA Volume = 18
+  TweeterLeft PA Volume = 16
+  TweeterRight PA Volume = 16
+diagnostica fatta Mon Nov 16 09:47:07 PM UTC 2026

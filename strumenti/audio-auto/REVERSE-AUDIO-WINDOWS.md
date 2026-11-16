@@ -70,3 +70,53 @@ python3 tools/re-audio/acdb_decode2.py audio/windows/acdb_cal.acdb /tmp/acdb.jso
 python3 tools/re-audio/acdb_ckv.py    audio/windows/acdb_cal.acdb                                         # varianti e chiavi
 ```
 Da fare: decodificare per intero IIR_MBDRC e i parametri della protezione; capire le chiavi CKV; identificare `0x070010A3`; confrontare con misure la risposta di Windows e di Linux.
+
+## 5. Seconda passata (2026-11-16 sera, da Windows 11 acceso, skill leanrea)
+Metodo: registro di Windows in sola lettura, file del DriverStore, firmware ADSP, confronto con progetti pubblici su portatili con lo stesso chip audio. Nessun suono riprodotto, nessuna registrazione.
+
+### 5a. Correzione della prima passata
+Il sottografo `0xB0000003` del punto 2 **non è** la catena della musica sugli altoparlanti: contiene EC_SYNC e `0x070010A3`, che condivide parametri con il cancellatore d'eco (**dedotto**: percorso voce). La catena di riproduzione usa un modulo del costruttore che la prima passata non aveva cercato. Quindi la frase del punto 3 "non c'è un'equalizzazione fissa di Windows da copiare" è **sbagliata** per il lato DSP.
+
+### 5b. Catena reale di Windows (**visto**)
+- Registro, endpoint "Altoparlanti" (`MMDevices\Audio\Render\{72a99614-…}\FxProperties`): effetto di flusso (SFX) e di modalità (MFX) = wrapper Dolby `{0EBD8605-…}` e `{0EBD8606-…}` (in offload `…8611` e `…8612`); effetto di endpoint (EFX) = `{697DA8EE-…}` "ProxyAPOEFX" di Qualcomm (`ProxyAPO.dll`). Modalità: predefinita, media, film, comunicazioni (più grezza per MFX).
+- `HKLM\SOFTWARE\Dolby\Wrapper`: i wrapper caricano gli APO Dolby veri `{E77F483A-…}` (SFX) e `{5CA784EC-…}` (MFX, EFX); `HKLM\SOFTWARE\Dolby\DAX\DolbyEnable=1`. DLL nel pacchetto `dax3_swc_aposvc_arm64…`: `DolbyDax3Apo.dll`, `DolbyAPOv251.dll`, `DolbyAPOv2100.dll`, `DolbyAPOvlldp*.dll`, servizio `DAX3API.exe`.
+- `NumAPOInterfaces` e `APOInterface0={FD7F2B29-…}` nelle INF sono la normale registrazione di un APO (interfaccia IAudioProcessingObject), non un elenco di altri effetti. Che cosa faccia `ProxyAPO.dll` durante l'elaborazione: **ignoto**.
+- DSP (ACDB), sottografo di elaborazione del dispositivo `0xB0000075` (gemelli `…35`, `…3F`, `…78`, `…7B`, `…7D`, `…81`, `…83`): `0x07001097` → SAL (limitatore) → SYNC → VOL_CTRL → **`0x0701000B`**; poi `0xB0000001`: SAL → SPLITTER → SPEAKER_PROTECTION v5 (`0x070010E2`) con VI (`0x070010E3`) e `0x070010E4` → CODEC_DMA_SINK.
+
+### 5c. Moduli prima ignoti
+| ID | Identità | Fonte |
+|---|---|---|
+| `0x07001019` | SOFT_PAUSE | **visto**: intestazione ufficiale `AudioReach/audioreach-graphservices`, `spf/api/modules/soft_pause_api.h` |
+| `0x070010E4` | instradatore dei dati CPS della protezione v5 | riportato da `geocausa/SP11X1e-audio` (disassemblato sul firmware del Surface Pro 11); `PARAM_ID_CPS_CHANNEL_MAP_V5 0x080013CB` **visto** nell'intestazione ufficiale `cps_data_router.h` |
+| `0x0701000B` | elaborazione degli altoparlanti del costruttore: incrocio, equalizzazione, compressori (forse `capi_msppv4`) | **dedotto** dai valori del punto 5d e da `nergzd723/xps13-9345-audio-softdsp` |
+| `0x07001097` | **ignoto** (un progetto lo chiama SWR_SINK senza prova; qui è il primo modulo della catena) | |
+| `0x07001068`, `0x070010A3` | **ignoti** | |
+
+Firmware ADSP di questo PC (`qcadsp8380.mbn`, sha256 `654723125e69b09731325839be594cc189513fc6b2b0ad8f0dcc970d8215522d`): tabella di registrazione statica con record da 16 byte (ID, get_static_properties, init, classe) da `0x11d69c4` a `0x11d6e04`, 69 moduli (**visto**), fra cui `0x0701000A`, `0x0701000B`, `0x070010E2`, `0x070010E3`, `0x070010E4`, `0x07001097`, `0x07001068`; `0x070010A3` è registrato più avanti (`0x11d7c84`). È lo stesso file che carica Linux: i moduli ci sono già, manca la configurazione.
+
+### 5d. Taratura Lenovo degli altoparlanti (modulo `0x0701000B`, parametro `0x0800137B`)
+**Visto**: 54180 byte in virgola mobile, identici nelle 8 istanze. Altri parametri del modulo: `0x08001026` (abilitazione), `0x080010A6`, `0x080013C2`, `0x08001505`, `0x08001A5B`.
+- Intestazione: dimensione `0xD3A0`; valore 4 (**dedotto**: canali); offset 16 = **2400,0** (**dedotto**: frequenza di incrocio woofer/tweeter in Hz; sul Dell XPS 13 lo stesso campo vale 2386); offset 20 e 24 = 1,122 (+1 dB); offset 56 = 64.
+- Offset 1132 e 2508: due cascate di 12 biquad passa-alto (b0 b1 b2 a0 a1 a2 ≈ 0,99 −1,97 0,99 / 1 −1,97 0,97). Risposta complessiva di ciascuna cascata a 48 kHz: −113 dB a 80 Hz, −32 dB a 150 Hz, +1,7 dB a 300 Hz, piatta sopra 1 kHz. Come le 12 sezioni si dividano fra i canali: **ignoto**.
+- Offset 37196 (12 sezioni) e 38572 (13 sezioni): due curve di equalizzazione. Guadagno in dB a 40 / 80 / 150 / 300 / 600 / 1k / 2k / 2,4k / 3k / 5k / 8k / 12k / 16k Hz:
+  - curva 1: +0,1 +0,5 +1,6 +2,2 −1,5 −5,9 −4,3 +4,8 +0,5 +2,7 +4,4 +4,6 +3,0
+  - curva 2: +0,2 +0,6 +2,2 +3,1 −1,4 −6,5 −3,3 +0,1 +0,4 +4,7 +6,9 +5,6 +1,2
+  - **dedotto**: frequenza di campionamento 48 kHz e confini delle cascate. A quale canale appartiene ciascuna curva: **ignoto**.
+- Il resto del blob (tabelle, compressori) non è decodificato.
+
+### 5e. Altro
+- `workspaceFile.qwsp`: 637312 byte, entropia 8,000 bit/byte, multiplo di 16, nessun blocco ripetuto: **cifrato** (**visto**). Chiave non cercata.
+- ACDB, blocco `MODM`: solo 4 moduli dinamici, i codec Bluetooth (aptX adaptive, aptX classic, LC3 codificatore e decodificatore).
+- Calibrazione per esemplare degli altoparlanti: sul Dell sta in `HKLM\SYSTEM\CurrentControlSet\Services\qcadcm\State\SpeakerProtectionInfo`; **su questo PC la chiave `State` è vuota** (letta senza privilegi elevati). Resistenza degli altoparlanti del Yoga: **ignota**.
+
+### 5f. Progetti pubblici con lo stesso chip audio (amplificatori WSA884x)
+- `nergzd723/xps13-9345-audio-softdsp` (Dell XPS 13 9345, 4 amplificatori come il Yoga): catena PipeWire e **compander degli amplificatori spento via UCM**. Motivo riportato: su Linux il driver usa tabelle per 8 ohm, gli altoparlanti sono da circa 4 ohm, e il compander acceso dava distorsione e tagli. Limiti di guadagno del kernel lasciati di serie.
+- `geocausa/SP11X1e-audio` (Surface Pro 11, 2 amplificatori): protezione degli altoparlanti del DSP funzionante su Linux con una topologia AudioReach propria e patch al kernel. Dimostra che la parità con Windows è raggiungibile, ma con sviluppo e prove sull'hardware.
+- `theflyingrahul/linux-hp-omnibook-5-glymur`: stessa struttura (`0xB0000075`, modulo `0x0701000D`, parametro `0x0800137B`).
+
+### 5g. Che cosa cambia per Linux
+1. Da provare sul portatile sotto Linux (reversibile): compander WSA884x spento nel profilo UCM, con misura al microfono, come nel progetto Dell.
+2. Portare nella catena PipeWire i valori Lenovo (incrocio a 2400 Hz e le due curve) **solo dopo** aver capito a quali canali appartengono, e senza aumentare i guadagni degli amplificatori: su Linux manca la protezione.
+3. Strada completa (sviluppo): topologia con `0x0701000B` e protezione v5, con invio dei parametri dell'ACDB, sul modello del progetto Surface.
+
+Strumenti di questa passata (da WSL, percorsi in testa ai file): `tools/re-audio/win-pass2-moduli-firmware.sh`, `win-pass2-vendor0b-dove.sh`, `win-pass2-vendor0b-biquad.sh`.

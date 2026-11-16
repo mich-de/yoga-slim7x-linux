@@ -96,3 +96,22 @@ Fonti: https://fedoraproject.org/wiki/Snapdragon_WoA_Laptop_Install · https://f
 - Struttura: `strumenti/` (copia di Y:), `chiavetta-efi/` (menu GRUB, `strumenti.cpio` e suo sorgente), `sorgenti/` (script Windows, prove in macchina virtuale, analisi), note di progetto nella radice.
 - Per aggiornare: ricopiare i file cambiati in `D:\linux\repo`, poi `git add -A && git commit && git push`. Le credenziali di git passano da GitHub CLI (`gh auth setup-git` già eseguito; se scadono: `gh auth login --web`).
 - La ISO di Fedora e l'immagine di prova `D:\linux\_vm\stick.img` non sono nel repository.
+
+## 11. Aggiornamento 16/11 notte: primo avvio reale e seconda passata di reverse
+### Primo avvio reale della chiavetta (prima voce "TUTTO AUTOMATICO"), due avvii, log in `STRUMENTI/log/`
+- Desktop Plasma partito in entrambi, nessuna unit fallita.
+- Tastiera: bus a 100 kHz, nessun errore I2C, driver `i2c_hid_of` e HID `lenovo`, dispositivo di input `event1` creato. Che i tasti scrivano lo deve confermare l'utente (interrupt della tastiera contati: 3 e 1).
+- Touchpad e touchscreen: `hid-multitouch`, multitocco presente, quindi gesture disponibili.
+- Audio: scheda rilevata, uscita `effect_input.yoga_spk` predefinita, `wsagain` caricato, PA Volume 18/18/16/16. Che si senta lo deve confermare l'utente.
+- Righe rosse all'avvio, tutte innocue: `cdsp_dtbs.elf -2` (il CDSP non serve), `pmic_glink Failed to create device link` (noto), `gen70500_sqe.fw` assente nell'initrd (caricato dopo, a 54 s: `Loaded GMU firmware v4.3.17`), `qcom-apm CMD timeout [1001021]` (DSP non ancora pronto, la scheda nasce subito dopo).
+- KO attesi nella live: CDSP, webcam, cpufreq (lo sistema `dopo-anaconda.sh`), TPM.
+- Corretti 3 falsi KO della diagnostica (`lib/comune.sh` `kbd_event`, `1-DIAGNOSTICA.sh` controlli GPU e uscita audio), provati sui dati veri.
+- Fedora NON ancora installata. Disco interno invariato (C: 554,6 GB, D: 396,9 GB, nessuno spazio libero). Domanda aperta: ridurre D: di 100 GB.
+
+### Seconda passata di reverse dell'audio di Windows
+Dettagli in `audio-auto/REVERSE-AUDIO-WINDOWS.md` punto 5. In breve: la prima passata aveva guardato il sottografo sbagliato; la catena vera usa il modulo Lenovo `0x0701000B` con una taratura da 54 KB (incrocio a 2400 Hz, due curve di equalizzazione, passa-alto); identificati SOFT_PAUSE e l'instradatore CPS; `qwsp` cifrato; trovati progetti pubblici gemelli (Dell XPS 13 9345 e Surface Pro 11).
+
+### Prossimi passi (prevalgono sul punto 9 dove in conflitto)
+1. Utente: dire se tasti e suono funzionavano; decidere la riduzione di D:; installare Fedora dalla prima voce.
+2. Sotto Linux: provare il compander WSA884x spento (UCM) con misura al microfono; capire i canali delle curve Lenovo e portarle in PipeWire senza alzare i guadagni.
+3. Commit nuovi solo locali in `D:\linux\repo`: il push richiede la conferma dell'utente.

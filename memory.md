@@ -29,3 +29,6 @@
 - Anaconda esegue i `*.ks` di `/usr/share/anaconda/post-scripts`: usato per preparare da solo il sistema installato.
 - Audio non può essere "come Windows 11": lì c'è Dolby Atmos (taratura del modello in `audio-auto/windows-dolby-taratura.txt`).
 - Prove possibili da Windows: QEMU in WSL con l'immagine `D:\linux\_vm\stick.img` (Fedora vera, non l'hardware).
+
+- Audio Windows: la taratura Lenovo degli altoparlanti sta nel modulo DSP 0x0701000B, parametro 0x0800137B (incrocio 2400 Hz); il sottografo 0xB0000003 non è la catena della musica.
+- Righe rosse all avvio della live (cdsp_dtbs.elf, pmic_glink, gen70500_sqe.fw, qcom-apm CMD timeout): innocue.
