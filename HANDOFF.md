@@ -144,3 +144,4 @@ Installare Fedora (serve spazio: ridurre D:, in attesa di conferma), poi lavorar
 - Non fatto: la stessa cosa per Fedora installata (serve una voce in `/etc/crypttab`, da aggiungere in `dopo-anaconda.sh`).
 - Alternativa definitiva da Windows, solo con la conferma dell'utente: decifrare D: (`manage-bde -off D:`). Con la chiave in chiaro la cifratura attuale non protegge comunque i dati.
 - Avvio rapido di Windows: `HiberbootEnabled=1` ma `hiberfil.sys` non esiste, quindi non blocca i volumi.
+- **Aggiornamento 16/11 ore 23:18**: su richiesta esplicita, D: decifrato da Windows (`manage-bde -off D:`). Verificato: "Decrittografia completata", 0%, nessuna versione BitLocker; ora è NTFS in chiaro e Fedora lo apre direttamente. C: invariato (BitLocker con chiave in chiaro, lo apre `autorun-root.sh`). Se in futuro Windows attiva la cifratura del dispositivo (accesso con account Microsoft), D: può essere cifrato di nuovo.

@@ -35,3 +35,4 @@
 
 - Tastiera e touch confermati dall utente sul portatile (prima voce del menu, 16/11).
 - Webcam: sensore OV02C10; driver presenti nel kernel Fedora 7.2.11, manca il device tree (camcc, cci, camss, sensore). Riferimento funzionante: aruhier/linux-slim7x-x1e.
+- D: decifrato il 16/11 (NTFS in chiaro); C: resta BitLocker con chiave in chiaro.
