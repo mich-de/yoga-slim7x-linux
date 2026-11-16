@@ -90,3 +90,9 @@ Regola: prima di scrivere sulla chiavetta, elencare ESP e STRUMENTI e confrontar
 6. Secure Boot: decidere tra le scelte a/b/c di `secureboot/LEGGIMI.txt`.
 
 Fonti: https://fedoraproject.org/wiki/Snapdragon_WoA_Laptop_Install · https://fedoraproject.org/wiki/Yoga_Slim7x · https://support.microsoft.com/help/5068202
+
+## 10. Copia su GitHub
+- Repository **privato**: https://github.com/mich-de/yoga-slim7x-linux (copia locale `D:\linux\repo`, ramo `main`). Contiene tutto il kit, compresi file proprietari presi da Windows e log: non renderlo pubblico.
+- Struttura: `strumenti/` (copia di Y:), `chiavetta-efi/` (menu GRUB, `strumenti.cpio` e suo sorgente), `sorgenti/` (script Windows, prove in macchina virtuale, analisi), note di progetto nella radice.
+- Per aggiornare: ricopiare i file cambiati in `D:\linux\repo`, poi `git add -A && git commit && git push`. Le credenziali di git passano da GitHub CLI (`gh auth setup-git` già eseguito; se scadono: `gh auth login --web`).
+- La ISO di Fedora e l'immagine di prova `D:\linux\_vm\stick.img` non sono nel repository.
