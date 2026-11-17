@@ -6,7 +6,7 @@ originale delle due librerie Dolby usate da Windows su questo portatile (`DolbyA
 I file non vengono modificati: sono caricati in memoria così come sono e accettati solo se la loro impronta
 SHA-256 è quella nota.
 
-**Questo repository non contiene nessun file Dolby né la taratura**: servono il proprio portatile e il proprio
+**Questa cartella non contiene nessun file Dolby né la taratura**: servono il proprio portatile e il proprio
 Windows. Uso personale, sullo stesso hardware che ha la licenza.
 
 ## Che cosa fa

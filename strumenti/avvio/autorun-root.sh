@@ -23,6 +23,7 @@ for d in /run/user/*; do
     [ -d "$d" ] || continue
     [ "${d##*/}" = 0 ] && continue
     u=$(id -nu "${d##*/}" 2>/dev/null) || continue
+    sudo -u "$u" XDG_RUNTIME_DIR="$d" systemctl --user daemon-reload 2>/dev/null  # unita' riscritte: senza, riparte quella vecchia
     sudo -u "$u" XDG_RUNTIME_DIR="$d" systemctl --user restart wireplumber filter-chain audio-yoga 2>/dev/null
 done
 bash "$KIT/avvio/audio-ampli.sh"

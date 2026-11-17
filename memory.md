@@ -83,3 +83,6 @@
 - Mai `pkill -f testo` quando lo stesso testo compare nel comando che si sta lanciando: usare `pgrep -a nome | awk` e `kill`.
 - Audio Yoga non esce su "Altoparlanti potenziati" ma su una copia senza compressore, "Altoparlanti (via Audio Yoga)" (`effect_input.yoga_spk_ay`, generata da `avvio/audio-yoga.sh`): il compressore 3:1 e i +18 dB della catena originale appiattivano ogni differenza (quattro profili entro 0,4 dB all'uscita finale, misurato il 17/11).
 - Per verificare un effetto audio si misura all'uscita finale (`alsa_output.platform-sound.HiFi__Speaker__sink`, 4 canali), non solo all'uscita del filtro. Le registrazioni a 4 canali di `pw-record` sono WAV "extensible": il modulo `wave` di Python non le legge, si cerca il blocco `data` a mano.
+- `README.md` del repository: **in inglese e dettagliato** (richiesta dell'utente del 17/11, per collaborare un giorno con un altro utente Yoga). Il resto della documentazione resta in italiano; il README ha un glossario. Aggiornarlo quando cambia lo stato.
+- All'avvio della live lo script di sistema finisce prima della sessione dell'utente (17/11: 08:13:24 contro 08:13:45), quindi unità e configurazioni dell'utente installate dal kit ci sono già quando partono i suoi servizi.
+- Gli orari nei file di consegna si prendono da `date`, non a stima.
