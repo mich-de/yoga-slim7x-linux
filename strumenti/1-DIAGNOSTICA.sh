@@ -49,6 +49,10 @@ chk "Profilo ALSA UCM Slim 7x presente"         "ls /usr/share/alsa/ucm2/Qualcom
 chk "Scheda audio rilevata"                     "grep -q '^ *[0-9]' /proc/asound/cards"
 chk "Audio: uscita 'Altoparlanti potenziati' attiva (6-AUDIO-PIU-FORTE)" "come_utente wpctl status | grep -qE 'Altoparlanti potenziati|effect_input\\.yoga_spk'"
 chk "Audio: modulo guadagno amplificatori caricato (7-VOLUME-AMPLIFICATORI)" "lsmod | grep -q '^wsagain'"
+chk "Audio Yoga: servizio attivo"               "come_utente systemctl --user is-active audio-yoga.service"
+chk "Audio Yoga: uscita predefinita"            "come_utente wpctl inspect @DEFAULT_AUDIO_SINK@ | grep -q effect_input.audio_yoga"
+# il motore viene creato al primo suono: mezzo secondo di silenzio, poi si cerca il codice caricato nel processo
+chk "Audio Yoga: codice Dolby caricato"         "come_utente timeout 5 pw-play --target effect_input.audio_yoga '$KIT/audio/silenzio.wav'; sleep 1; grep -q rwxp /proc/\$(come_utente systemctl --user show -p MainPID --value audio-yoga.service)/maps"
 chk "Coprocessore CDSP in esecuzione"           "grep -lqx running \$(grep -lE 'cdsp|32300000' /sys/class/remoteproc/*/name | sed 's/name\$/state/')"
 chk "Batteria"                                  "ls /sys/class/power_supply/ | grep -qi bat"
 echo "--- Altro" >> "$S"
