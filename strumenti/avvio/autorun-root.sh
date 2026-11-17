@@ -6,14 +6,24 @@ KIT=$(dirname "$(dirname "$(readlink -f "$0")")")
 mkdir -p "$KIT/log"
 exec >> "$KIT/log/autorun.log" 2>&1
 echo "=== autorun $(date) - kernel $(uname -r) - cmdline: $(cat /proc/cmdline)"
+# Fedora non carica da solo scmi-cpufreq (lo dice la guida): senza, la CPU non scala mai di frequenza
+modprobe scmi-cpufreq
+# CDSP: alla distro manca cdsp_dtbs.elf; dall'initramfs lo fa partire strumenti.cpio. Qui: stessi firmware nel
+# sistema avviato (servono se il coprocessore riparte) e avvio se e' rimasto fermo
+P=qcom/x1e80100/LENOVO/83ED
+mkdir -p /lib/firmware/updates/$P && cp "$KIT/firmware/$P"/{qccdsp8380.mbn,cdsp_dtbs.elf,cdspr.jsn} /lib/firmware/updates/$P/ &&
+    for r in /sys/class/remoteproc/remoteproc*; do
+        [ "$(cat "$r/name")" = cdsp ] && [ "$(cat "$r/state")" = offline ] && echo start > "$r/state"
+    done
 bash "$KIT/avvio/audio-sistema.sh"
+bash "$KIT/avvio/audio-yoga.sh"
 touch /run/yoga-audio-pronto
 # se l'utente e' gia' entrato, fa rileggere le configurazioni ai suoi servizi audio
 for d in /run/user/*; do
     [ -d "$d" ] || continue
     [ "${d##*/}" = 0 ] && continue
     u=$(id -nu "${d##*/}" 2>/dev/null) || continue
-    sudo -u "$u" XDG_RUNTIME_DIR="$d" systemctl --user restart wireplumber filter-chain 2>/dev/null
+    sudo -u "$u" XDG_RUNTIME_DIR="$d" systemctl --user restart wireplumber filter-chain audio-yoga 2>/dev/null
 done
 bash "$KIT/avvio/audio-ampli.sh"
 # Windows cifra C: e D: tenendo la chiave in chiaro sul disco (BitLocker "in attesa di attivazione"):

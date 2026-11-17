@@ -1,0 +1,48 @@
+Protezione altoparlanti del DSP (ADSP) su Linux: dati di Windows + driver e topologia. SPERIMENTALE.
+Stato al 17/11/2026 (mattina): PROVATA A 18 dB. Il DSP apre il grafo, accetta tutte le tarature, e con wsavi.ko
+(ritorno V/I + Offset2 = 0 + sensori come Windows) e gli amplificatori a 18 dB (PA Volume 29, il guadagno di
+Windows) la calibrazione riesce (3,84 / 3,59 / 4,22 / 3,98 ohm, entro l'1,3 % da Windows) e la protezione
+termica interviene usando la temperatura misurata. Sotto circa 6 dB di guadagno il DSP non vede il tono pilota.
+NON e' ancora attiva nell'uso normale: all'avvio restano PA Volume 18/16 e niente wsavi. Mancano il profilo di
+Windows dello stadio di potenza, le prove sopra -20 dBFS e il servizio che carica wsavi quando l'uscita parte.
+Ogni prova a 18 dB richiede il consenso dell'utente.
+
+Dati
+  yoga-slim7x-spkr-prot.bin               45 frame: tarature nell'ordine di Windows + R0/T0 di QUESTO portatile
+  yoga-slim7x-spkr-prot-calibrazione.bin  uguale, ma con SP_RX e SP_VI in modo calibrazione (prova del ritorno V/I)
+  sp_tag.json vi_tag.json viep_tag.json sg_cal.json   tabelle dell'ACDB da cui nascono i file
+  Rigenerare: python3 tools/re-audio/acdb_prot_blob.py audio/protezione uscita.bin R0Q24:T0Q6 (x4) [--calibrazione]
+  R0/T0 dal registro di Windows: python3 tools/re-audio/hive_spkr.py <hive SYSTEM> SpeakerProt
+
+topologia/   (serve: m4, alsa-topology-utils, git)
+  build.sh   compila X1E80100-LENOVO-Yoga-Slim7x-tplg.bin: LOG -> MFC -> SP_RX 0x411A -> uscita,
+             piu' un contenitore con la sorgente V/I 0x411B -> SP_VI 0x4121 (stessi identificativi di Windows)
+
+kernel/      (serve: kernel-devel della versione in uso, gcc, make, curl, patch)
+  q6apm-sp.patch   modifiche a snd-q6apm: control link SP_VI<->SP_RX, tarature da file un frame per comando,
+                   lettura parametri (getcfg)
+  Makefile         make BUILD=cartella: scarica i sorgenti della versione del kernel, applica la patch, compila
+  <versione>/      moduli gia' compilati per quel kernel
+  scambia.sh       on | off | ricarica | stato: scambio a caldo con il driver di serie. Niente sospensione durante.
+  gprport.c        aiuto per lo scambio a caldo (rimette la porta GPR che il kernel toglie allo sgancio)
+  wsavi.c          ritorno V/I finche' e' caricato: stream SoundWire (porta 5 dei 4 amplificatori -> porte 10/11
+                   dei due controller) + percorso V/I delle macro WSA + (dal 17/11) le due impostazioni di Windows
+                   che mancano a Linux: Offset2 = 0 sulle porte 10/11 del controller (off2=0; il device tree ha
+                   0xff e il DSP leggeva V e I nello stesso bit) e sensori degli amplificatori a 6 dB / -21 dB
+                   (isense=0 vsense=3). Valore -1 = non toccare. insmod wsavi.ko [chmask=3] [sdw=0] [off2=0]
+                   [isense=0] [vsense=3]; rmmod wsavi per spegnere. Caricare mentre suona; rmmod prima di
+                   sospendere il portatile. Dati e prove: amplificatori/LEGGIMI.txt, HANDOFF.md punto 21.
+  prova-vi.sh      sudo bash prova-vi.sh [chmask]: calibrazione del DSP con wsavi, stampa stato e R0
+  statovi.py       sudo dmesg | python3 statovi.py: decodifica le risposte getcfg dello stato di calibrazione
+  prova-vi-18db.sh sudo bash prova-vi-18db.sh 3: la stessa calibrazione con gli amplificatori a 18 dB e solo silenzio
+                   (PA Volume 29 per la durata della prova, volume di PipeWire al 5 %, poi tutto come prima)
+  prova-protezione.sh  sudo bash prova-protezione.sh [gradi]: a 18 dB, toni a -20 dBFS con l'obiettivo di temperatura
+                   normale (90) e abbassato, con e senza V/I; mostra se il DSP attenua. Ripristina tutto alla fine.
+
+Leggere un parametro dal DSP mentre suona (risposta in dmesg), per esempio lo stato di calibrazione:
+  echo "0x4121 0x080011f8 64" | sudo tee /sys/module/snd_q6apm_sp/parameters/getcfg
+  parole della risposta: esito, modulo, parametro, dimensione, 0, canali, STATO, R0 (Q24) per altoparlante
+  STATO: 1 porta V/I ferma, 2 riscaldamento, 3 in corso, 4 riuscita, 5 fallita, 7 attesa V/I scaduta, 8 V/I troppo bassi
+Scegliere il file di taratura: echo -n qcom/x1e80100/LENOVO/83ED/<file> | sudo tee /sys/module/snd_q6apm_sp/parameters/sp_cal
+
+Spiegazione: audio-auto/REVERSE-AUDIO-WINDOWS.md punti 7 e 8; HANDOFF.md punto 18.

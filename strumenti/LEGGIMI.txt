@@ -6,8 +6,9 @@ COSA SUCCEDE DA SOLO (senza rete e senza comandi)
   Avviando la chiavetta e lasciando partire la prima voce del menu ("TUTTO AUTOMATICO"):
   1. TASTIERA e TOUCHPAD funzionano dall'avvio: il menu carica un kernel che ha gia' dentro la correzione
      (bus I2C a 100 kHz). Non c'e' nessuno script da lanciare e non serve internet.
-  2. AUDIO: un servizio monta questa partizione e applica l'uscita "Altoparlanti potenziati" (anche i tweeter)
-     e il guadagno degli amplificatori scelto il 16/11 (woofer 18, tweeter 16). I plugin audio sono gia' qui.
+  2. AUDIO: un servizio monta questa partizione e applica l'uscita "Altoparlanti potenziati" (woofer e tweeter
+     con incrocio a 2,4 kHz, tarata con misure). I plugin audio sono gia' qui. Il volume e' basso perche' il kernel
+     tiene gli amplificatori al minimo (manca la protezione altoparlanti): vedi HANDOFF.md punto 15.
   3. DIAGNOSTICA: dopo circa un minuto viene salvata in log/.
   4. INSTALLAZIONE: quando installi Fedora dal programma di installazione, a fine installazione il sistema
      installato riceve da solo: kernel corretto (e correzione automatica dei kernel futuri), audio, firmware,
@@ -41,6 +42,7 @@ CARTELLE
   boot/         kernel 7.2.11 con la correzione tastiera, copia del menu GRUB e dell'initrd aggiuntivo
   fix-tastiera/ device tree corretto e modulo i2cslow2 per la correzione a caldo
   audio/        configurazioni PipeWire/WirePlumber, modulo wsagain, file presi da Windows
+  audio/protezione/  tarature della protezione altoparlanti del DSP prese da Windows (non ancora usate dal kernel)
   audio-auto/   plugin LADSPA per l'audio senza rete, taratura Dolby di Windows (documentazione)
   upstream/     segnalazione e patch per gli sviluppatori del kernel (NON ancora inviate)
   firmware/     firmware presi dal Windows di questo portatile + topologia audio + firmware GPU; SHA256SUMS
@@ -57,5 +59,6 @@ COSA E' STATO PROVATO DAVVERO
   In macchina virtuale con Fedora 45 vera (non e' l'hardware del portatile): il menu di avvio, l'avvio del kernel
   corretto, l'initrd aggiuntivo, il servizio automatico, l'installazione dell'audio senza rete, la diagnostica,
   gli script 8, 9, 10, 12 e la preparazione automatica del sistema installato (kernel, aggancio, parametri).
-  NON ancora provati sul portatile: l'avvio a freddo con la voce automatica (tastiera, touchpad e audio reali)
-  e l'installazione vera. Ogni automatismo scrive in log/ (autorun.log, dopo-anaconda-*.txt).
+  Sul portatile, avvio a freddo con la voce automatica (16/11 notte): tastiera, touchpad e gesture confermati.
+  Audio ritarato con misure ai microfoni interni (tools/misura-audio.py): vedi audio-auto/REVERSE-AUDIO-WINDOWS.md punto 6.
+  NON ancora provata: l'installazione vera. Ogni automatismo scrive in log/ (autorun.log, dopo-anaconda-*.txt).

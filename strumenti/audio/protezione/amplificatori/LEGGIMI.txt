@@ -1,0 +1,36 @@
+Profilo di Windows degli amplificatori WSA884x (Yoga Slim 7x) - 17/11/2026
+
+Perche': la calibrazione della protezione leggeva 2,025 ohm invece di circa 4. Linux lascia sugli amplificatori
+il profilo generico (carico 8 ohm, 21 dB); Windows usa quello per altoparlanti da 4 ohm a 18 dB.
+
+VISTO
+- ACDB del Yoga (audio/windows/acdb_cal.acdb), dati driver, modulo 0x08000090 parametro 0x08000091, uscita 1:
+  sei parole 1, 3, 0, 4, 0, 1 -> carico nominale 4 ohm (quarta parola). Identico al Surface Pro 11.
+- Stesso ACDB, modulo 0x08000020 parametro 0x08000022, proprieta' 0x10100006 = 0x24 -> guadagno 18 dB (in mezzi dB),
+  sia nella riga a 2 canali sia in quella a 4.
+- Driver Windows del Yoga qcaucd8380.sys 1.0.0.10778 (sha256 2771b797...79092c51), disassemblato con objdump:
+  0x140032ac4-0x140032b70  sceglie ISENSE2 (0x3021) da carico e guadagno: 6 dB -> 0x07, 12 -> 0x27, 15 -> 0x47,
+                           18 -> 0x67; per carico 4 ohm e guadagno 0x24 la tabella da' 6 dB, quindi 0x07.
+  0x140032ba8-0x140032c50  sceglie VSENSE1 (0x3020) dal guadagno: 0x21 o 0x24 -> 0x67; 0x2a (21 dB) -> 0x87.
+- Linux 7.2.11 sul Yoga (registri letti): 0x3020 = 0x87, 0x3021 = 0x27; li riscrive wsa884x_set_gain_parameters
+  a ogni accensione dell'altoparlante. Tutte le differenze: confronto-linux-2026-11-17.txt
+
+- Riscontro del profilo nel driver del Yoga (17/11): delle 79 scritture di profilo-windows-wsa884x.json
+  (a freddo 63, avvio 10, arresto 6; traccia del driver Windows sul Surface Pro 11, progetto
+  geocausa/SP11X1e-audio, patch 0063) 75 compaiono identiche, registro e valore costante, nel codice di
+  qcaucd8380.sys del Yoga (chiamate alla funzione di scrittura 0x140031188: 164 con registro WSA costante).
+  Le altre 4 sono valori calcolati o mascherati: DRE_CTL_0, ANA_WO_CTL_0, UVLO_PROG, BOP2_PROG.
+- Alimentazione: i quattro amplificatori del Yoga leggono VPHX_SYS_EN_STATUS (0x3501) = 2, cioe' "2S" come sul
+  Surface. Linux di serie applica i valori "1S" (ANA_WO_CTL_0 = 0x1d; Windows 0x9d).
+
+DEDOTTO
+- Che il driver del Yoga percorra gli stessi rami del Surface (stesso record ACDB, stessa alimentazione, stesso
+  guadagno): non c'e' una traccia di esecuzione sul Yoga. Il profilo dello stadio di potenza (OCP 0xf6, limiti di
+  corrente, soglie) non e' ancora applicato su Linux: finora sono stati provati solo i due registri dei sensori.
+- Windows usa gli amplificatori in modo DRE (DRE_CTL_1 = 0x00, guadagno guidato dal compander della macro);
+  le prove su Linux usano il guadagno fisso equivalente (PA Volume 29 = 18 dB, DRE_CTL_1 = 0x05).
+
+Strumenti
+  python3 tools/re-audio/wsa_profilo.py crea <wsa884x.c> <patch 0063> profilo.json
+  sudo python3 tools/re-audio/wsa_profilo.py confronta audio/protezione/amplificatori/profilo-windows-wsa884x.json
+  Dati driver dell'ACDB: tools/acdb_driver_data_inventory.py del progetto gemello (licenza BSD-2).

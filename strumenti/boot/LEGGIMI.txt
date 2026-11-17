@@ -19,6 +19,10 @@ FILE
                      - post-script per il programma di installazione (/usr/share/anaconda/post-scripts):
                        a fine installazione lancia avvio/dopo-anaconda.sh sul sistema installato
                    Tutta la logica sta su STRUMENTI (cartella avvio/), quindi si aggiorna senza rifare il cpio.
+                   Dal 17/11 contiene anche usr/lib/firmware/updates/qcom/x1e80100/LENOVO/83ED/qccdsp8380.mbn e
+                   cdsp_dtbs.elf (dal kit): a Fedora manca cdsp_dtbs.elf e il coprocessore CDSP non partiva.
+                   Rifarlo (repo, cartella chiavetta-efi): python3 mk_cpio.py initrd strumenti.cpio
+                   Copia precedente sulla partizione EFI: strumenti.cpio.bak-1711
                    Nota: il servizio e' attivato con un drop-in e non con un collegamento in *.wants, perche'
                    al primo avvio systemd applica i preset di Fedora e toglie quei collegamenti.
 

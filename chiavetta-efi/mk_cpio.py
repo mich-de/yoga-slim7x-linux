@@ -27,7 +27,9 @@ def main():
             items.append((rel, 0o040755, b""))
         for f in sorted(files):
             p = f"{rel}/{f}" if rel != "." else f
-            data = open(os.path.join(root, f), "rb").read().replace(b"\r\n", b"\n")
+            data = open(os.path.join(root, f), "rb").read()
+            if b"\0" not in data:  # solo i testi: i firmware devono restare byte per byte
+                data = data.replace(b"\r\n", b"\n")
             items.append((p, 0o100755 if "/bin/" in p else 0o100644, data))
     for link, target in SYMLINKS.items():
         items.append((link, 0o120777, target.encode()))

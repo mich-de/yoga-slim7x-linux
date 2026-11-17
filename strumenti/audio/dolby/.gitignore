@@ -1,0 +1,14 @@
+# programmi compilati e dati privati (taratura, DLL): non vanno nel repository
+prova1
+prova2
+prova3
+esplora4
+yogadolby
+profili.txt
+*.dll
+*.o
+esplora5
+prova_plugin
+audio_yoga.so
+esplora_vr
+esplora_vr2

@@ -1,0 +1,11 @@
+# Dati privati presi dal Windows del portatile, o derivati da quelli: non vanno nel repository
+strumenti/dolby-privato/
+strumenti/audio-auto/dolby/taratura-yoga.json
+strumenti/audio-auto/dolby/07-taratura.md
+strumenti/audio-auto/dolby/dati/proprieta-endpoint-windows.txt
+strumenti/schermo/profili/
+chiavetta-efi/initrd/usr/
+strumenti/audio/protezione/*.bin
+strumenti/audio/protezione/*_tag.json
+strumenti/audio/protezione/sg_cal.json
+__pycache__/

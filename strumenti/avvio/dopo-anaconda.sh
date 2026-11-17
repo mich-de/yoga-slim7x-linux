@@ -28,6 +28,7 @@ bash "$KIT/12-TASTIERA-FIX-PERMANENTE.sh" --auto --sistema "$R" 2>&1 | tail -n 8
 
 echo "--- 3. audio"
 bash "$KIT/avvio/audio-sistema.sh" "$R"
+bash "$KIT/avvio/audio-yoga.sh" "$R"
 mkdir -p "$R/etc/systemd/system/multi-user.target.d" "$R/etc/xdg/autostart"
 printf '%s\n' '[Unit]' 'Description=Yoga Slim 7x: guadagno degli amplificatori degli altoparlanti' 'After=sound.target multi-user.target' '' \
     '[Service]' 'Type=oneshot' 'ExecStart=/bin/bash /opt/yoga-slim7x/avvio/audio-ampli.sh' '' \

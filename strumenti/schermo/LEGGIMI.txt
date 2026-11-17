@@ -1,0 +1,9 @@
+Profili colore dello schermo del Yoga Slim 7x (pannello LEN 8AC2) - copia di D:\snapcontrol\profiles (17/11/2026)
+
+profili/TPLCD_8AC2_<modo>.icm           profili ICC tarati in fabbrica: sRGB, DisplayP3, DCIP3, AdobeRGB, REC709,
+                                        Default, Native
+profili/TPLCD_8AC2_<modo>_Quality.txt   rapporto di qualita' della taratura (Display Factory Calibration Tool)
+
+In Windows li applica SnapControl (pagina COLOR, al posto di X-Rite Color Assistant).
+In Linux (KDE Plasma): Impostazioni di sistema > Schermo > Profilo colore > file ICC.
+Sono profili "MHC2" di Windows: non verificato che KWin applichi la correzione di fabbrica contenuta nel tag MHC2.

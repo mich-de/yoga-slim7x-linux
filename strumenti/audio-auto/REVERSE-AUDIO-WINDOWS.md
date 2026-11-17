@@ -120,3 +120,110 @@ Firmware ADSP di questo PC (`qcadsp8380.mbn`, sha256 `654723125e69b09731325839be
 3. Strada completa (sviluppo): topologia con `0x0701000B` e protezione v5, con invio dei parametri dell'ACDB, sul modello del progetto Surface.
 
 Strumenti di questa passata (da WSL, percorsi in testa ai file): `tools/re-audio/win-pass2-moduli-firmware.sh`, `win-pass2-vendor0b-dove.sh`, `win-pass2-vendor0b-biquad.sh`.
+
+## 6. Terza passata (2026-11-16 notte, dalla live Fedora sul portatile, con misure ai microfoni interni)
+Strumenti: `tools/misura-audio.py` (toni, sweep, catena simulata), `tools/ctl-amplificatori.sh` (controlli per numid, registro DRE_CTL_1).
+
+### 6a. Amplificatori WSA884x su Linux 7.2.11: causa del volume basso (**visto**, misurato)
+- Il driver della scheda (`sound/soc/qcom/x1e80100.c`) limita apposta `WSA*_RX* Digital Volume` a 81 (−3 dB) e `PA Volume` di Woofer/Tweeter a 6, con il commento "to reduce the risk of speaker damage until we have active speaker protection". Il modulo `wsagain` (parametro `cap`) alza solo questo tetto.
+- Il driver dell'amplificatore (`wsa884x_mute_stream`) a ogni avvio del flusso mette CSR_GAIN_EN=1 (DRE_CTL_1 bit 0): guadagno fisso dato da `PA Volume`, letto **solo in quel momento** (cambiarlo mentre l'uscita è attiva non fa nulla; l'uscita si sospende dopo 5 s di silenzio).
+- Scala misurata (tono 1 kHz, uscita lasciata sospendere fra le prove): `PA Volume` v vale 21 − 1,5×(31 − v) dB, cioè 17 = 0 dB, 31 = 21 dB; sotto circa 15 il guadagno resta al minimo. Valori 6 e 12: stesso livello; 17: +3,2 dB; 18: +4,7 dB.
+- Azzerando CSR_GAIN_EN a metà tono (modulo di prova `audio/wsareg/`) il livello sale di **24 dB** (−43,1 → −19,1 dB): è il guadagno pieno dell'amplificatore (21 dB), quello che Windows può usare perché ha la protezione degli altoparlanti.
+- Quindi Linux con il profilo UCM di serie (`PA Volume` 12, rimesso a ogni attivazione dell'uscita) suona circa 24 dB sotto il massimo dell'hardware. I valori 18/16 del 16/11 pomeriggio davano +4,7 dB sui woofer e nulla sui tweeter, e venivano poi riportati a 12 dall'UCM.
+- `COMP Switch` degli amplificatori: nessun effetto; il compander del codec è già spento nel profilo UCM.
+- Le scritture arrivano al chip (PA_FSM_EN=0 a metà tono → silenzio); nessun errore negli stati (INTR_STATUS a zero).
+- Nei driver Windows (`qcaucd8380.sys`, `qcadcm8380.sys`, `qcaudminiport8380.sys`) non ci sono tabelle di registri WSA884x; la configurazione arriva dall'ACDB (`AcdbGetWsaCfg`, sezione GCLU/GCDT, moduli driver 0x8000020–0x8000090, non ancora interpretati) e il codice che scrive i registri è **ignoto** (**dedotto**: firmware ADSP).
+- Ordine dei canali PCM confermato: 0,1 woofer, 2,3 tweeter. Sul bus SoundWire 1 ci sono i due woofer, sul 4 i due tweeter (**dedotto** dalle risposte misurate; i nomi del device tree non corrispondono).
+
+### 6b. Altoparlanti misurati (un canale alla volta, guadagno ingresso → microfono)
+- Woofer: sotto 250 Hz non emettono (−40 dB a 250 Hz, −27 a 500 Hz); picchi a 500 Hz e 1 kHz; calano sopra 1,6 kHz.
+- Tweeter: 19 dB più sensibili dei woofer a 2 kHz; utili da 1,6 kHz.
+- Sopra 8 kHz i microfoni interni hanno una risonanza (+10/+15 dB a 12,7 kHz su tutti i canali): misure non affidabili lì.
+- Catena PipeWire del 16/11 pomeriggio (incrocio 3 kHz, tweeter −9 dB invertiti): buco di 11–14 dB a 2 kHz e acuti 6–8 dB sotto i medi. Causa del suono cupo.
+
+### 6c. Struttura della taratura Lenovo (`0x0701000B` / `0x0800137B`, 54180 byte) (**visto**)
+- 8 unità da 1376 byte, ciascuna = FIR (lunghezza 64, spazio per 256 prese) + 12 parole di opzioni + 12 biquad (b0 b1 b2 a0 a1 a2):
+  - A (biquad a 1132), B (2508): passa-alto identici, FIR identità. 9 sezioni attive: −113 dB a 80 Hz, −32 a 150 Hz, piatto da 300 Hz.
+  - C (37196, FIR a 36120), D (38572, FIR a 37496): le due curve del punto 5d. I FIR correggono ±2,5 dB fra 2 e 5 kHz.
+  - E (49720), G (52472): FIR a zero; biquad piatti fino a 1 kHz, −2/−3 dB fra 2 e 5 kHz, +5/+10 dB a 12,7 kHz.
+  - F (51096), H (53848): FIR identità; passa-alto ripido (−3,5 dB a 1 kHz, −19 a 500 Hz, −36 a 300 Hz) e taglio sopra 5 kHz.
+- **Dedotto**: A,B e C,D = canali sinistro e destro prima della divisione; E,F,G,H = i quattro altoparlanti, con F e H = tweeter (passa-alto a 1 kHz). Il significato delle 12 parole di opzioni e dei FIR a zero di E e G è **ignoto**.
+- Altro nel blob: tabelle da 1023 valori (6, da 3000 a 27628), un compressore a 23 bande (soglie da −10,5 a −24,9 dB, tempi, rapporti) a 34500–35800, due serie di 23 valori a 44556 e 44648 (**dedotto**: risposta misurata dei due lati per banda).
+- Le curve non sono state copiate tali e quali: in Windows il guadagno relativo woofer/tweeter degli amplificatori è **ignoto**, e senza quello le curve da sole sbilanciano il suono.
+
+### 6d. Nuova catena PipeWire (`audio/50-yoga-altoparlanti.conf`), tarata con le misure
+Passa-alto 180 Hz del 4° ordine; incrocio LR4 a 2400 Hz (valore Lenovo); tweeter a −7 dB con la stessa polarità dei woofer; −4 dB a 560 Hz sui woofer; +3 dB a 6,5 kHz sui tweeter. Compressore, limitatore e limite dei bassi invariati.
+Risultato misurato sulla catena vera (sweep a −42 dBFS, media dei due microfoni, 400–8000 Hz): scarto 3,4 dB → 1,8 dB; il buco a 2 kHz è chiuso (−17,5 → −10,6 dB con i medi a −7); acuti allo stesso livello dei medi (prima 6 dB sotto).
+Costo: ai tweeter arriva più segnale di prima (+2 dB di livello, +3 dB a 6,5 kHz, banda da 2,4 kHz invece di 3). Resta sotto ciò che manda la taratura Lenovo (tweeter da 1 kHz), ma su Linux non c'è protezione.
+
+## 7. Quarta passata (2026-11-16 notte, live Fedora): protezione altoparlanti del DSP, dati pronti per Linux
+Obiettivo dell'utente: guadagno pieno (+24 dB) **solo** con la protezione dell'ADSP attiva. Qui: tutto ciò che serve dal lato Windows, estratto e verificato. Nessun modulo caricato, nessun guadagno toccato.
+
+### 7a. Grafo di Windows, sottografo `0xB0000001` (**visto**, `tools/re-audio/acdb_graph.py`)
+- Uscita (contenitore `0xE0000001`): SAL `0x4001` → CHMIXER `0x4AC9` → **SP_RX `0x411A`** (`0x070010E2`) → SPLITTER `0x4002` → LOG `0x4003` → CODEC_DMA_SINK `0x4157`.
+- Ritorno V/I (contenitore `0xE0000036`): CODEC_DMA_SOURCE `0x411B` → LOG `0x411E` → **SP_VI `0x4121`** (`0x070010E3`).
+- CPS (contenitori `…37`, `…38`, `…39`): CODEC_DMA_SOURCE `0x411C` e `0x411D` → LOG → MUX_DEMUX `0x4122` → instradatore CPS `0x4123` (`0x070010E4`).
+- Control link (parametro APM `0x08001061`): SP_VI:`0x80000000` ↔ SP_RX:`0x80000000`, intento `0x08001204` (INTENT_ID_SP); CPS:`0x80000000` ↔ SP_RX:`0x80000001`, intento `0x08001537` (INTENT_ID_CPS). Proprietà di ogni link: `0x08001062` (lista intenti) e `0x0800136F = 1`.
+- Stessa forma del Surface Pro 11 (là 2 altoparlanti, qui 4 in un solo modulo: il firmware ne accetta fino a 4, **visto** in `sp_vi.h` pubblico; il limite a 2 è solo del driver Linux).
+
+### 7b. Tarature (**visto**, tabelle MTLU dell'ACDB, lette con `acdb_module_tag_inventory.py` del progetto `geocausa/SP11X1e-audio`, licenza BSD-2)
+- Tag `0x0401000A` (SP_RX), righe per bit (16/24) e canali (2/4). Riga 4 canali: `0x080011E8` (68 B: 48 kHz, 4 altoparlanti, frame 1 ms, funzioni `0x1F`, controllo a 1000 Hz), `0x08001314`, `0x0800135A`, `0x08001367`, `0x0800150A`, `0x0800150E` (1212 B), `0x08001532` (1692 B).
+- Tag `0x0401000B` (SP_VI), riga 4 canali: `0x080011F6` (44 B: 4 altoparlanti, **8000 Hz**, tono pilota 40 Hz), `0x08001203` (mappa canali 1…8 = V e I di ogni altoparlante), `0x08001384` (2084 B), `0x08001510` (temperatura massima, `0x1900` = 100 °C in Q6 per altoparlante), `0x08001535` (212 B).
+- Tag `0x04010005` (endpoint V/I, modulo `0x411B`): **8000 Hz, 32 bit, 4 canali**; interfaccia LPAIF WSA (tipo 2), indice 1, maschera canali `0xF`. Conferma nel registro: `…\ADCM\SpkrProtVIInfo` = 8000 Hz, 32 bit.
+- Taratura di sottografo (CDLU) per `0x411A` (18 parametri, fra cui `0x08001258` 1520 B e `0x0800134A` 2188 B), `0x4121` (9), `0x4123` (1): una sola variante per parametro, quindi nessuna ambiguità di chiave.
+- Ordine di Windows (dal progetto gemello, driver `qcadcm8380.sys`): apertura grafo → taratura di sottografo → modo SP_RX `0x080011E9` → taratura con tag SP_RX → R0/T0 `0x080011F5` → modo VI `0x080011F4` → modo escursione `0x080011FF` → taratura con tag SP_VI → endpoint V/I → avvio.
+
+### 7c. R0/T0 di questo portatile (**visto**, hive `SYSTEM`, `tools/re-audio/hive_spkr.py`)
+`ControlSet001\Services\qcadcm\State\SpeakerProtectionInfo`: `NumChannels=4`, `UseCalibR0T0=1`.
+| Canale | R0CalQ24 | R0 | T0CalQ6 | T0 |
+|---|---|---|---|---|
+| 0 | `0x03E209CC` | 3,883 Ω | 2709 | 42,3 °C |
+| 1 | `0x03A3D5E7` | 3,640 Ω | 2816 | 44,0 °C |
+| 2 | `0x04408F78` | 4,252 Ω | 2794 | 43,7 °C |
+| 3 | `0x0401BAC7` | 4,007 Ω | 2666 | 41,7 °C |
+Sono misure fatte da Windows su questi altoparlanti (non costanti di fabbrica). A quale altoparlante corrisponda ogni canale: **ignoto** (dedotto: ordine dei canali del DMA). `QCAUD\Feature\SpeakerProtection`: `SpeakerCoolDownTimerInSec=180`, `IsSpeakerProtQuickCalib=0`.
+
+### 7d. File pronto per il DSP
+`audio/protezione/yoga-slim7x-spkr-prot.bin` (15624 byte, 42 frame, sha256 `6556ac9667b2936c…`): frame APM `{iid, param_id, size, 0, dati allineati a 8}` nell'ordine di Windows (sottografo SP_RX e SP_VI, tag SP_RX, R0/T0 + modo normale con R0/T0 tarati + modo escursione 0, tag SP_VI). Gli IID sono quelli di Windows (`0x411A`, `0x4121`): la topologia Linux deve usare gli stessi. Si rigenera con `tools/re-audio/acdb_prot_blob.py` (i 12 parametri con tag sono stati riconfrontati byte per byte). Mancano di proposito CPS ed endpoint.
+
+### 7e. Che cosa manca a Linux 7.2.11 (**visto** nei sorgenti)
+- `audioreach.c`: per SP_RX manda solo il modo; per SP_VI modo, mappa e modo escursione, e rifiuta più di 2 altoparlanti. Nessuna taratura, nessun R0/T0, **nessun control link** (il parametro `0x08001061` non esiste nel driver), quindi SP_RX non riceve nulla da SP_VI.
+- Topologia a monte del Yoga (`audioreach-topology`): senza moduli di protezione; i sorgenti m4 non hanno nemmeno le macro per quei moduli.
+- Device tree: un solo collegamento `WSA_CODEC_DMA_RX_0` (4 canali, macro WSA + WSA2, 4 amplificatori). Nessun collegamento per il ritorno `WSA_CODEC_DMA_TX_0`. Ogni WSA884x ha la porta VISENSE (porte master 10 e 11) e il controllo `VISENSE Switch`; la macro ha il DAI `WSA_AIF_VI` (indice 2) e i controlli `WSA_SPKR_VI_1/2`.
+- `x1e80100.c`: tetti a Digital Volume 81 e PA Volume 6, senza condizioni.
+
+### 7f. Progetto gemello `geocausa/SP11X1e-audio` (letto: README, patch 0001–0049 per titoli, cinque documenti)
+Ha la protezione funzionante sul Surface Pro 11 con un kernel 7.1.5 dedicato e circa 80 patch (control link, invio delle tarature frame per frame, ritorno V/I a 8 kHz, CPS, sequenze degli amplificatori). Lezioni utili qui: le tarature si mandano una per frame (un frame rifiutato non blocca gli altri); PBR e CPS dei due amplificatori condividono le porte master 7 e 13 e non vanno messe nello stream di riproduzione; il registro `TOP_CFG1=0x03` degli amplificatori fa uscire V e I alternati; il ritorno V/I va provato leggendo la telemetria (`0x080011F2`) e non dato per buono.
+
+## 8. Protezione altoparlanti su Linux: prima prova sul DSP (2026-11-17 notte, live Fedora)
+File e istruzioni: `audio/protezione/LEGGIMI.txt`. Stato e prossimi passi: `HANDOFF.md` punto 18. Nessun guadagno alzato.
+- **Visto**: con la topologia nuova (SP_RX `0x411A`, sorgente V/I `0x411B`, SP_VI `0x4121`) e `snd-q6apm` modificato, l'ADSP apre il grafo (control link SP_VI↔SP_RX compreso) e accetta 45 frame di taratura su 45, inviati in banda uno per comando.
+- **Visto** (rilettura con `APM_CMD_GET_CFG`): SP_RX `0x080011E9` = 0 (normale); `0x080011E8` = 48000 Hz, 16 bit, 4 altoparlanti, funzioni `0x1F`; `0x080011F3` = `05010200` (versione 5.1.2.0, parametro non presente nell'ACDB); SP_VI `0x080011F6` = 4 altoparlanti, 8000 Hz, tono pilota 40 Hz; `0x08001510` = `0x1900` ×4. Leggibili: `E8 EA EB F3` su SP_RX, `F4 F6 1510` su SP_VI; `F8` solo in calibrazione; errore 1 per `F2` (SP_RX), `FA FC 1201 150F` (SP_VI); gli identificativi pubblici della versione 7 (`0x08001B3C`…`5E`) non sono supportati (errore 3).
+- **Misurato**: senza ritorno V/I, SP_RX in modo normale lascia il livello invariato entro 0,9 dB rispetto alla topologia di serie (toni a −40/−30/−20 dBFS, PA Volume 6).
+- **Visto**: stato di calibrazione (`0x080011F8` di SP_VI: canali, stato, R0 in Q24): 1 senza ritorno; 2 e poi 7 (attesa V/I scaduta) dopo aver acceso il percorso V/I delle macro WSA e WSA2 (`TXn_SPKR_PROT_PATH_CTL` = 0x10, `TOP_CFG1` = 0x03). La sorgente V/I del DSP parte quindi con il solo clock delle macro; mancano i dati dagli amplificatori (porte SoundWire VISENSE).
+- **Dedotto, non provato**: `VISENSE Switch` non può funzionare nello stream di riproduzione perché le porte master 10 e 11 sono porte di ingresso del controller.
+
+## 9. Sesta passata (2026-11-17 mattina, live Fedora, skill leanrea): perché la calibrazione falliva
+Cambio di metodo chiesto dall'utente: niente altri tentativi di calibrazione alla cieca, prima si ricava che cosa fa Windows. File: `audio/protezione/amplificatori/`, strumento `tools/re-audio/wsa_profilo.py`.
+
+### 9a. Profilo degli amplificatori usato da Windows
+- **Visto** (ACDB del Yoga, dati driver, decodificati con `tools/acdb_driver_data_inventory.py` del progetto gemello): modulo `0x08000090`/`0x08000091`, uscita 1 = sei parole `1, 3, 0, 4, 0, 1` (carico nominale **4 Ω**), identico al Surface Pro 11; modulo `0x08000020`/`0x08000022`, proprietà `0x10100006 = 0x24` = guadagno **18 dB** (non 21), per 2 e per 4 canali.
+- **Visto** (`qcaucd8380.sys` 1.0.0.10778 del Yoga, sha256 `2771b797…79092c51`, `objdump -d`): il driver scrive davvero i registri WSA884x (correzione del punto 6a). `0x140032ac4…b70` sceglie `ISENSE2` (`0x3021`) da carico e guadagno (6 dB → `0x07`, 12 → `0x27`, 15 → `0x47`, 18 → `0x67`; 4 Ω a 18 dB → `0x07`); `0x140032ba8…c50` sceglie `VSENSE1` (`0x3020`) dal guadagno (`0x21`/`0x24` → `0x67`, `0x2a` → `0x87`).
+- **Visto** (registri letti sul Yoga): Linux lascia `0x3020 = 0x87` (−24 dB) e `0x3021 = 0x27` (12 dB) e in tutto 28 registri diversi dalla sequenza a freddo di Windows (stadio di potenza compreso): `amplificatori/confronto-linux-2026-11-17.txt`.
+- **Dedotto**: il resto del profilo (`profilo-windows-wsa884x.json`: 63 scritture a freddo, 10 all'avvio, 6 all'arresto) è la traccia del driver Windows sul Surface Pro 11; non ancora riscontrato registro per registro nel driver del Yoga.
+
+### 9b. Taratura di SP_VI, parametro `0x08001535` (212 B) (**visto**, struttura `sp_vi_th_spkr_param_t` di `sp_vi.h`)
+Per altoparlante (0…3): resistenza di riserva 4,307 / 3,689 / 4,327 / 3,597 Ω; tono pilota `0x0a3d` = −40 dBFS; resistenza delle piste 0,130 / 0,130 / 0,107 / 0,112 Ω; tensione di picco a fondo scala digitale 10,96 / 11,05 / 10,93 / 11,07 V; da digitale a volt 15,07 / 15,17 / 15,14 / 15,15; da digitale ad ampere 7,01 / 7,05 / 7,02 / 7,03; soglia del pilota `0x4000` = 25 % dell'atteso. In coda, per altoparlante: attesa 100 ms, calibrazione 2000 ms, attesa V/I 100 ms (2000 ms nella riga a 2 canali).
+
+### 9c. Le due cause (**misurato**)
+1. **Trasporto**: nel device tree le porte 10 e 11 dei controller WSA/WSA2 hanno `qcom,ports-offset2 = 0xff`. Nel controller Qualcomm `Offset2 + 1` è la distanza fra i canali di una porta (COMP: 7 → ogni 8 bit; BOOST: 0x1f → ogni 32): con `0xff` il secondo canale ricade sullo stesso bit del primo, quindi V = I. Il DSP calcolava R = (da digitale a volt)/(da digitale ad ampere) − piste = 15,07/7,01 − 0,13 = **2,019 Ω**: letti 2,025 (altoparlante 0) e 2,058 (altoparlante 3, atteso 2,044), e la lettura non cambiava spostando i guadagni dei sensori di 6 e 3 dB. Windows su quelle porte scrive `Offset2 = 0` prima di avviare il grafo (traccia del progetto gemello: porta 10 `0x0300060f`, porta 11 `0x03000d0f`, stessi offset del Yoga).
+2. **Livello**: con `Offset2 = 0` i dati sono veri ma lo stato diventa 7 (attesa V/I scaduta). Il pilota atteso è 0,01 × 10,96 V = 0,110 V di picco, soglia 25 % = 0,027 V; con `PA Volume` 18 l'amplificatore è a 1,5 dB invece dei 18 dB di Windows, cioè 0,016 V: sotto soglia. La taratura presume l'amplificatore a 18 dB (`PA Volume` 29).
+- Ordine di Windows (progetto gemello, traccia a freddo): prima `GLOBAL_PA_EN = 1` sui due amplificatori, poi i clock di protezione delle macro; l'ordine inverso dava guasti dell'amplificatore. `wsavi` lo rispetta (si carica mentre suona).
+
+### 9d. Controllo termico di SP_RX, parametro `0x08001532` (1692 B a 4 canali) (**visto**, strutture `param_id_sp_dynamic_cfg_t` e `sp_th_ctrl_param_t` di `sp_rx.h`)
+- Parte comune (parole da 30): canali collegati 1, **metodo 2** (temperatura stimata in avanti), temperatura presunta all'avvio 50 °C, misure accettate fra −30 e 200 °C, variazione massima 64 °C/s, **attenuazione massima −12 dB**, zona morta 1 °C.
+- Per altoparlante (10 parole da 71, 81, 91, 101): pilota −40 dBFS, bobina 4,30 / 3,69 / 4,32 / 3,59 Ω, fondo scala 10,96 / 11,04 / 10,89 / 11,06 V, resistenza termica 37,3 °C/W, costanti di tempo 1,85 e 7,41 s, **obiettivo 90 °C** (`0x1680`, parola 78 + 10k), termini P e I `0x1302`, `0x866`.
+- Corrispondenza degli identificativi fra versione 5 (Yoga) e 7 (pubblica), per posizione: `E9`→`B40` modo, `EA`→`B41`, `EB`→`B42`, `ED`→`B44`, `EE`→`B45`, `EF`→`B46` statistiche termiche, `F0`→`B47`, `F1`→`B48`, `F2`→`B49` massimi; la configurazione dinamica è `0x08001532`. Le quattro statistiche sono rifiutate in lettura dal firmware del Yoga (**visto**).
+
+### 9e. Prove sul portatile (**misurato**, 17/11): `HANDOFF.md` punto 21
+Calibrazione riuscita a 18 dB (3,840 / 3,594 / 4,218 / 3,983 Ω contro 3,883 / 3,640 / 4,252 / 4,007 di Windows). Protezione termica: abbassando l'obiettivo sotto la temperatura delle bobine il DSP attenua di 11–12 dB; con obiettivo 45 °C attenua solo senza ritorno V/I (temperatura presunta 50 °C), mentre con il ritorno toglie l'attenuazione in 3 s: usa la temperatura misurata.

@@ -1,0 +1,3 @@
+Dati di studio (17/11/2026). Non pubblicare: vengono dal Windows del portatile.
+sha256-dll-yoga.txt              impronte dei 14 binari Dolby versione 3.30812.891.0 (il ponte accetta solo questi)
+proprieta-endpoint-windows.txt   valori Dolby delle proprieta' dell'endpoint altoparlanti nel registro di Windows (profilo Musica)

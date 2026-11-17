@@ -1,0 +1,446 @@
+diff -u orig/audioreach.c src/audioreach.c
+--- orig/audioreach.c	2026-11-16 23:46:47.982706126 +0000
++++ src/audioreach.c	2026-11-16 23:50:11.107731299 +0000
+@@ -1,7 +1,9 @@
+ // SPDX-License-Identifier: GPL-2.0
+ // Copyright (c) 2020, Linaro Limited
+ 
++#include <linux/firmware.h>
+ #include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/slab.h>
+ #include <linux/soc/qcom/apr.h>
+ #include <sound/soc.h>
+@@ -109,6 +111,38 @@
+ 
+ #define APM_MOD_CONN_PSIZE(p, n) ALIGN(struct_size(p, conn_obj, n), 8)
+ 
++/*
++ * Control link between the speaker protection V/I module and the RX module,
++ * as opened by the vendor graphs: without it the RX module gets no feedback.
++ */
++#define APM_MODULE_PROP_ID_CTRL_LINK_INTENT_LIST	0x08001062
++#define APM_MODULE_PROP_ID_CTRL_LINK_SP			0x0800136f
++#define AR_SP_CTRL_PORT_ID				0x80000000
++#define AR_INTENT_ID_SP					0x08001204
++
++struct apm_sp_ctrl_link_params {
++	struct apm_module_param_data param_data;
++	uint32_t num_ctrl_links;
++	uint32_t peer_1_mod_iid;
++	uint32_t peer_1_mod_ctrl_port_id;
++	uint32_t peer_2_mod_iid;
++	uint32_t peer_2_mod_ctrl_port_id;
++	uint32_t num_props;
++	uint32_t intent_prop_id;
++	uint32_t intent_prop_size;
++	uint32_t num_intents;
++	uint32_t intent_id;
++	uint32_t sp_prop_id;
++	uint32_t sp_prop_size;
++	uint32_t sp_prop_val;
++} __packed;
++
++#define APM_SP_CTRL_LINK_PSIZE ALIGN(sizeof(struct apm_sp_ctrl_link_params), 8)
++
++static char *sp_cal = "qcom/x1e80100/LENOVO/83ED/yoga-slim7x-spkr-prot.bin";
++module_param(sp_cal, charp, 0644);
++MODULE_PARM_DESC(sp_cal, "speaker protection calibration frames (firmware path)");
++
+ struct apm_graph_open_params {
+ 	struct apm_cmd_header *cmd_header;
+ 	struct apm_sub_graph_params *sg_data;
+@@ -202,31 +236,6 @@
+ } __packed;
+ #define APM_DP_INTF_CFG_PSIZE ALIGN(sizeof(struct apm_display_port_module_intf_cfg), 8)
+ 
+-struct apm_module_sp_vi_op_mode_cfg {
+-	struct apm_module_param_data param_data;
+-	struct param_id_sp_vi_op_mode_cfg cfg;
+-} __packed;
+-
+-#define APM_SP_VI_OP_MODE_CFG_PSIZE(ch) ALIGN( \
+-				sizeof(struct apm_module_sp_vi_op_mode_cfg) + \
+-				(ch) * sizeof(uint32_t), 8)
+-
+-struct apm_module_sp_vi_ex_mode_cfg {
+-	struct apm_module_param_data param_data;
+-	struct param_id_sp_vi_ex_mode_cfg cfg;
+-} __packed;
+-
+-#define APM_SP_VI_EX_MODE_CFG_PSIZE ALIGN(sizeof(struct apm_module_sp_vi_ex_mode_cfg), 8)
+-
+-struct apm_module_sp_vi_channel_map_cfg {
+-	struct apm_module_param_data param_data;
+-	struct param_id_sp_vi_channel_map_cfg cfg;
+-} __packed;
+-
+-#define APM_SP_VI_CH_MAP_CFG_PSIZE(ch) ALIGN( \
+-				sizeof(struct apm_module_sp_vi_channel_map_cfg) + \
+-				(ch) * sizeof(uint32_t), 8)
+-
+ static void *__audioreach_alloc_pkt(int payload_size, uint32_t opcode, uint32_t token,
+ 				    uint32_t src_port, uint32_t dest_port, bool has_cmd_hdr)
+ {
+@@ -468,7 +477,8 @@
+ void *audioreach_alloc_graph_pkt(struct q6apm *apm,
+ 				 const struct audioreach_graph_info *info)
+ {
+-	int payload_size, sg_sz, cont_sz, ml_sz, mp_sz, mc_sz;
++	int payload_size, sg_sz, cont_sz, ml_sz, mp_sz, mc_sz, cl_sz = 0;
++	uint32_t sp_iid = 0, vi_iid = 0;
+ 	struct apm_module_param_data  *param_data;
+ 	struct apm_container_params *cont_params;
+ 	struct audioreach_container *container;
+@@ -505,6 +515,10 @@
+ 
+ 			list_for_each_entry(module, &container->modules_list, node) {
+ 				num_connections += module->num_connections;
++				if (module->module_id == MODULE_ID_SPEAKER_PROTECTION)
++					sp_iid = module->instance_id;
++				else if (module->module_id == MODULE_ID_SPEAKER_PROTECTION_VI)
++					vi_iid = module->instance_id;
+ 			}
+ 		}
+ 	}
+@@ -518,7 +532,10 @@
+ 	mp_sz = APM_MOD_PROP_PSIZE(mprop, num_modules);
+ 	mc_sz =	APM_MOD_CONN_PSIZE(mcon, num_connections);
+ 
+-	payload_size = sg_sz + cont_sz + ml_sz + mp_sz + mc_sz;
++	if (sp_iid && vi_iid)
++		cl_sz = APM_SP_CTRL_LINK_PSIZE;
++
++	payload_size = sg_sz + cont_sz + ml_sz + mp_sz + mc_sz + cl_sz;
+ 	pkt = audioreach_alloc_apm_cmd_pkt(payload_size, APM_CMD_GRAPH_OPEN, 0);
+ 	if (IS_ERR(pkt))
+ 		return pkt;
+@@ -570,6 +587,29 @@
+ 	params.mod_conn_list_data->num_connections = num_connections;
+ 	p += mc_sz;
+ 
++	if (cl_sz) {
++		struct apm_sp_ctrl_link_params *cl = p;
++
++		cl->param_data.module_instance_id = APM_MODULE_INSTANCE_ID;
++		cl->param_data.param_id = APM_PARAM_ID_MODULE_CTRL_LINK_CFG;
++		/* alignment bytes stay outside param_size */
++		cl->param_data.param_size = sizeof(*cl) - APM_MODULE_PARAM_DATA_SIZE;
++		cl->num_ctrl_links = 1;
++		cl->peer_1_mod_iid = vi_iid;
++		cl->peer_1_mod_ctrl_port_id = AR_SP_CTRL_PORT_ID;
++		cl->peer_2_mod_iid = sp_iid;
++		cl->peer_2_mod_ctrl_port_id = AR_SP_CTRL_PORT_ID;
++		cl->num_props = 2;
++		cl->intent_prop_id = APM_MODULE_PROP_ID_CTRL_LINK_INTENT_LIST;
++		cl->intent_prop_size = 2 * sizeof(uint32_t);
++		cl->num_intents = 1;
++		cl->intent_id = AR_INTENT_ID_SP;
++		cl->sp_prop_id = APM_MODULE_PROP_ID_CTRL_LINK_SP;
++		cl->sp_prop_size = sizeof(uint32_t);
++		cl->sp_prop_val = 1;
++		p += cl_sz;
++	}
++
+ 	audioreach_populate_graph(apm, info, &params, sg_list, num_sub_graphs);
+ 
+ 	return pkt;
+@@ -1261,90 +1301,61 @@
+ 	return q6apm_send_cmd_sync(graph->apm, pkt, 0);
+ }
+ 
+-static int audioreach_speaker_protection(struct q6apm_graph *graph,
+-					 const struct audioreach_module *module,
+-					 uint32_t operation_mode)
+-{
+-	return audioreach_send_u32_param(graph, module, PARAM_ID_SP_OP_MODE,
+-					 operation_mode);
+-}
+-
+-static int audioreach_speaker_protection_vi(struct q6apm_graph *graph,
+-					    const struct audioreach_module *module,
+-					    const struct audioreach_module_config *mcfg)
+-{
+-	u32 num_channels = mcfg->num_channels;
+-	struct apm_module_sp_vi_op_mode_cfg *op_cfg;
+-	struct apm_module_sp_vi_channel_map_cfg *cm_cfg;
+-	struct apm_module_sp_vi_ex_mode_cfg *ex_cfg;
+-	int op_sz, cm_sz, ex_sz;
+-	struct apm_module_param_data *param_data;
+-	int rc, i, payload_size;
+-	struct gpr_pkt *pkt;
+-	void *p;
+-
+-	if (num_channels > 2) {
+-		dev_err(graph->dev, "Error: Invalid channels (%d)!\n", num_channels);
+-		return -EINVAL;
++/*
++ * Speaker protection calibration: a firmware file of APM parameter frames
++ * {module iid, param id, size, 0, data padded to 8 bytes}, in the order the
++ * DSP expects them. It carries everything the RX and V/I modules and the
++ * V/I endpoint need (static tuning, R0/T0 of this unit, operation modes).
++ * One SET_CFG per frame: the DSP rejects some of them when packed together.
++ * A rejected frame is reported and does not stop the others.
++ */
++static int audioreach_sp_send_cal(struct q6apm_graph *graph)
++{
++	const struct firmware *fw;
++	int rc, sent = 0, bad = 0;
++	size_t off = 0;
++
++	rc = firmware_request_nowarn(&fw, sp_cal, graph->dev);
++	if (rc) {
++		dev_err(graph->dev, "speaker protection: no calibration %s (%d)\n", sp_cal, rc);
++		return rc;
+ 	}
+ 
+-	op_sz = APM_SP_VI_OP_MODE_CFG_PSIZE(num_channels);
+-	/* Channel mapping for Isense and Vsense, thus twice number of speakers. */
+-	cm_sz = APM_SP_VI_CH_MAP_CFG_PSIZE(num_channels * 2);
+-	ex_sz = APM_SP_VI_EX_MODE_CFG_PSIZE;
+-
+-	payload_size = op_sz + cm_sz + ex_sz;
+-
+-	pkt = audioreach_alloc_apm_cmd_pkt(payload_size, APM_CMD_SET_CFG, 0);
+-	if (IS_ERR(pkt))
+-		return PTR_ERR(pkt);
+-
+-	p = (void *)pkt + GPR_HDR_SIZE + APM_CMD_HDR_SIZE;
+-
+-	op_cfg = p;
+-	param_data = &op_cfg->param_data;
+-	param_data->module_instance_id = module->instance_id;
+-	param_data->error_code = 0;
+-	param_data->param_id = PARAM_ID_SP_VI_OP_MODE_CFG;
+-	param_data->param_size = op_sz - APM_MODULE_PARAM_DATA_SIZE;
+-
+-	op_cfg->cfg.num_channels = num_channels;
+-	op_cfg->cfg.operation_mode = PARAM_ID_SP_VI_OP_MODE_NORMAL;
+-	p += op_sz;
+-
+-	cm_cfg = p;
+-	param_data = &cm_cfg->param_data;
+-	param_data->module_instance_id = module->instance_id;
+-	param_data->error_code = 0;
+-	param_data->param_id = PARAM_ID_SP_VI_CHANNEL_MAP_CFG;
+-	param_data->param_size = cm_sz - APM_MODULE_PARAM_DATA_SIZE;
+-
+-	cm_cfg->cfg.num_channels = num_channels * 2;
+-	for (i = 0; i < num_channels; i++) {
+-		/*
+-		 * Map speakers into Vsense and then Isense of each channel.
+-		 * E.g. for PCM_CHANNEL_FL and PCM_CHANNEL_FR to:
+-		 * [1, 2, 3, 4]
+-		 */
+-		cm_cfg->cfg.channel_mapping[2 * i] = (mcfg->channel_map[i] - 1) * 2 + 1;
+-		cm_cfg->cfg.channel_mapping[2 * i + 1] = (mcfg->channel_map[i] - 1) * 2 + 2;
++	while (fw->size - off >= APM_MODULE_PARAM_DATA_SIZE) {
++		const struct apm_module_param_data *frame = (const void *)fw->data + off;
++		size_t sz = ALIGN(APM_MODULE_PARAM_DATA_SIZE + (size_t)frame->param_size, 8);
++		struct gpr_pkt *pkt;
++
++		if (sz > fw->size - off)
++			break;
++
++		/* shortcut: in-band SET_CFG (largest frame ~2.2 kB), move to shared memory if the DSP refuses the size */
++		pkt = audioreach_alloc_apm_cmd_pkt(sz, APM_CMD_SET_CFG, 0);
++		if (IS_ERR(pkt)) {
++			rc = PTR_ERR(pkt);
++			goto out;
++		}
++		memcpy((void *)pkt + GPR_HDR_SIZE + APM_CMD_HDR_SIZE, frame, sz);
++		rc = q6apm_send_cmd_sync(graph->apm, pkt, 0);
++		kfree(pkt);
++		if (rc) {
++			bad++;
++			dev_err(graph->dev, "speaker protection: frame %d iid 0x%x param 0x%08x size %u: %d\n",
++				sent, frame->module_instance_id, frame->param_id,
++				frame->param_size, rc);
++			if (rc == -ETIMEDOUT)
++				goto out;
++		}
++		sent++;
++		off += sz;
+ 	}
+ 
+-	p += cm_sz;
+-
+-	ex_cfg = p;
+-	param_data = &ex_cfg->param_data;
+-	param_data->module_instance_id = module->instance_id;
+-	param_data->error_code = 0;
+-	param_data->param_id = PARAM_ID_SP_VI_EX_MODE_CFG;
+-	param_data->param_size = ex_sz - APM_MODULE_PARAM_DATA_SIZE;
+-
+-	ex_cfg->cfg.factory_mode = 0;
+-
+-	rc = q6apm_send_cmd_sync(graph->apm, pkt, 0);
+-
+-	kfree(pkt);
+-
++	rc = off == fw->size ? 0 : -EINVAL;
++	if (rc)
++		dev_err(graph->dev, "speaker protection: %s truncated at %zu\n", sp_cal, off);
++out:
++	dev_info(graph->dev, "speaker protection: %d frames sent, %d rejected\n", sent, bad);
++	release_firmware(fw);
+ 	return rc;
+ }
+ 
+@@ -1384,8 +1395,14 @@
+ 	case MODULE_ID_GAIN:
+ 		rc = audioreach_gain_set(graph, module);
+ 		break;
+-	case MODULE_ID_CODEC_DMA_SINK:
+ 	case MODULE_ID_CODEC_DMA_SOURCE:
++		/* V/I feedback endpoint of a playback graph: set by the calibration file */
++		if (cfg->direction == SNDRV_PCM_STREAM_PLAYBACK) {
++			rc = 0;
++			break;
++		}
++		fallthrough;
++	case MODULE_ID_CODEC_DMA_SINK:
+ 		rc = audioreach_codec_dma_set_media_format(graph, module, cfg);
+ 		break;
+ 	case MODULE_ID_SAL:
+@@ -1400,16 +1417,11 @@
+ 		rc = audioreach_gapless_set_media_format(graph, module, cfg);
+ 		break;
+ 	case MODULE_ID_SPEAKER_PROTECTION:
+-		rc = audioreach_speaker_protection(graph, module,
+-						   PARAM_ID_SP_OP_MODE_NORMAL);
+-		if (!rc)
+-			rc = audioreach_module_enable(graph, module, true);
+-
++		rc = audioreach_sp_send_cal(graph);
+ 		break;
+ 	case MODULE_ID_SPEAKER_PROTECTION_VI:
+-		rc = audioreach_speaker_protection_vi(graph, module, cfg);
+-		if (!rc)
+-			rc = audioreach_module_enable(graph, module, true);
++		/* configured together with the RX module, from the calibration file */
++		rc = 0;
+ 		break;
+ 
+ 	default:
+diff -u orig/audioreach.h src/audioreach.h
+--- orig/audioreach.h	2026-11-16 23:46:47.982881284 +0000
++++ src/audioreach.h	2026-11-16 23:50:11.107798175 +0000
+@@ -169,6 +169,8 @@
+ 	uint32_t dst_mod_ip_port_id;
+ } __packed;
+ 
++#define APM_PARAM_ID_MODULE_CTRL_LINK_CFG	0x08001061
++
+ #define APM_PARAM_ID_GAIN			0x08001006
+ 
+ struct param_id_gain_cfg {
+diff -u orig/q6apm.c src/q6apm.c
+--- orig/q6apm.c	2026-11-16 23:46:47.982655448 +0000
++++ src/q6apm.c	2026-11-16 23:50:11.108155886 +0000
+@@ -29,6 +29,8 @@
+ 
+ static struct q6apm *g_apm;
+ 
++#define APM_GETCFG_MAX	4096
++
+ int q6apm_send_cmd_sync(struct q6apm *apm, const struct gpr_pkt *pkt,
+ 			uint32_t rsp_opcode)
+ {
+@@ -900,6 +902,7 @@
+ 
+ static void apm_remove(gpr_device_t *gdev)
+ {
++	g_apm = NULL;
+ 	of_platform_depopulate(&gdev->dev);
+ 	snd_soc_unregister_component(&gdev->dev);
+ }
+@@ -944,6 +947,7 @@
+ 		case APM_CMD_GRAPH_FLUSH:
+ 		case APM_CMD_GRAPH_STOP:
+ 		case APM_CMD_SET_CFG:
++		case APM_CMD_GET_CFG:
+ 			apm->result.opcode = result->opcode;
+ 			apm->result.status = result->status;
+ 			if (result->status)
+@@ -969,6 +973,14 @@
+ 			break;
+ 		}
+ 		break;
++	case APM_CMD_RSP_GET_CFG:
++		/* payload: status, then the parameter header and its data */
++		print_hex_dump(KERN_INFO, "q6apm getcfg: ", DUMP_PREFIX_OFFSET, 16, 4,
++			       data->payload, min(data->payload_size, APM_GETCFG_MAX + 32), false);
++		apm->result.opcode = hdr->opcode;
++		apm->result.status = result->opcode;
++		wake_up(&apm->wait);
++		break;
+ 	case APM_CMD_RSP_SHARED_MEM_MAP_REGIONS:
+ 		apm->result.opcode = hdr->opcode;
+ 		apm->result.status = 0;
+@@ -996,6 +1008,43 @@
+ 	return 0;
+ }
+ 
++/*
++ * Debug read of a module parameter (e.g. speaker protection telemetry):
++ *   echo "<iid> <param id> <size>" > /sys/module/<module>/parameters/getcfg
++ * The reply is dumped in the kernel log.
++ */
++static int q6apm_getcfg_set(const char *val, const struct kernel_param *kp)
++{
++	struct apm_module_param_data *param_data;
++	struct q6apm *apm = g_apm;
++	int iid, pid, size, rc;
++	struct gpr_pkt *pkt;
++
++	if (!apm || sscanf(val, "%i %i %i", &iid, &pid, &size) != 3 ||
++	    size < 0 || size > APM_GETCFG_MAX)
++		return -EINVAL;
++
++	pkt = audioreach_alloc_apm_cmd_pkt(APM_MODULE_PARAM_DATA_SIZE + ALIGN(size, 8),
++					   APM_CMD_GET_CFG, 0);
++	if (IS_ERR(pkt))
++		return PTR_ERR(pkt);
++
++	param_data = (void *)pkt + GPR_HDR_SIZE + APM_CMD_HDR_SIZE;
++	param_data->module_instance_id = iid;
++	param_data->param_id = pid;
++	param_data->param_size = size;
++
++	rc = q6apm_send_cmd_sync(apm, pkt, APM_CMD_RSP_GET_CFG);
++	kfree(pkt);
++
++	return rc;
++}
++
++static const struct kernel_param_ops q6apm_getcfg_ops = {
++	.set = q6apm_getcfg_set,
++};
++module_param_cb(getcfg, &q6apm_getcfg_ops, NULL, 0200);
++
+ #ifdef CONFIG_OF
+ static const struct of_device_id apm_device_id[]  = {
+ 	{ .compatible = "qcom,q6apm" },
+@@ -1009,7 +1058,7 @@
+ 	.remove = apm_remove,
+ 	.gpr_callback = apm_callback,
+ 	.driver = {
+-		.name = "qcom-apm",
++		.name = "qcom-apm-sp",	/* lives next to the stock snd-q6apm */
+ 		.of_match_table = of_match_ptr(apm_device_id),
+ 	},
+ };
+diff -u orig/topology.c src/topology.c
+--- orig/topology.c	2026-11-16 23:46:47.982766126 +0000
++++ src/topology.c	2026-11-16 23:50:11.107856821 +0000
+@@ -809,6 +809,9 @@
+ 	case MODULE_ID_DISPLAY_PORT_SINK:
+ 		audioreach_widget_dp_module_load(mod, mod_array);
+ 		break;
++	case MODULE_ID_SPEAKER_PROTECTION:
++	case MODULE_ID_SPEAKER_PROTECTION_VI:
++		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
