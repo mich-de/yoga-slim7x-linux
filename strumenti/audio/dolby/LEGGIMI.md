@@ -10,7 +10,8 @@ SHA-256 è quella nota.
 Windows. Uso personale, sullo stesso hardware che ha la licenza.
 
 ## Che cosa fa
-- Uscita PipeWire "Audio Yoga", messa prima di "Altoparlanti potenziati".
+- Uscita PipeWire "Audio Yoga", messa prima di una copia senza compressore della catena degli altoparlanti
+  ("Altoparlanti (via Audio Yoga)"): il compressore di "Altoparlanti potenziati" appiattirebbe gli effetti.
 - Sei profili della taratura: Dinamico, Film, Musica (predefinito, come in Windows), Gioco, Voce, Spento.
 - Surround virtuale, dialoghi più chiari e volume uniforme, con i valori di ogni profilo o scelti a mano.
 - Equalizzatore a 20 bande (da −12 a +12 dB) sul banco di filtri della libreria, con curve pronte.

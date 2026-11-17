@@ -32,6 +32,19 @@ dir="$PRIV"
 if [ -n "$R" ]; then dir=/opt/yoga-slim7x/dolby-privato; mkdir -p "$R$dir" && cp "$PRIV"/* "$R$dir/" 2>/dev/null; fi
 metti "$S/audio_yoga.so" "$R/usr/lib64/ladspa/audio_yoga.so" 0755
 metti "$S/audio-yoga.conf" "$R/etc/pipewire/audio-yoga.conf"
+# Catena degli altoparlanti per Audio Yoga: quella di "Altoparlanti potenziati" senza il compressore (che
+# appiattirebbe di nuovo cio' che il motore ha fatto: misurato il 17/11, quattro profili entro 0,4 dB). Resta un
+# guadagno fisso di 6 dB (con 12 il segnale era gia' al tetto digitale a volume pieno e le differenze non
+# passavano), l'incrocio, la correzione e il limitatore generale a -1,5 dBFS. Il limitatore dei
+# bassi a -9 dBFS viene alzato a -1,5: imitava il regolatore Dolby, che ora c'e' davvero a monte (a questo
+# guadagno degli amplificatori -1,5 dBFS sono 1,4 V di picco, meno di quanto Windows lascia passare).
+mkdir -p "$R/etc/pipewire/filter-chain.conf.d"
+sed -e 's/"Altoparlanti potenziati"/"Altoparlanti (via Audio Yoga)"/' \
+    -e 's/effect_input\.yoga_spk/effect_input.yoga_spk_ay/; s/effect_output\.yoga_spk/effect_output.yoga_spk_ay/' \
+    -e 's/"Ratio (1:n)" = 3.0/"Ratio (1:n)" = 1.0/' -e 's/"Input gain (dB)" = 6.0/"Input gain (dB)" = 0.0/' \
+    -e 's/"Limit (dB)" = -9.0/"Limit (dB)" = -1.5/' -e 's/"Makeup gain (dB)" = 12.0/"Makeup gain (dB)" = 6.0/' \
+    "$KIT/audio/50-yoga-altoparlanti.conf" > "$R/etc/pipewire/filter-chain.conf.d/52-yoga-altoparlanti-ay.conf" &&
+    echo "  $R/etc/pipewire/filter-chain.conf.d/52-yoga-altoparlanti-ay.conf"
 metti "$S/audio_yoga.py" "$R/usr/local/bin/audio-yoga" 0755
 mkdir -p "$R/etc/systemd/user/default.target.d" "$R/usr/share/applications" "$R/etc/xdg/autostart"
 printf '%s\n' '[Unit]' 'Description=Audio Yoga: profili audio con il motore dell altoparlante' \

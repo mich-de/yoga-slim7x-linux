@@ -8,7 +8,7 @@ t=$(mktemp -d)
 pulisci() { kill "${pid:-0}" 2>/dev/null; [ -n "${nullo:-}" ] && pw-cli destroy "$nullo" >/dev/null 2>&1; rm -rf "$t"; }
 trap pulisci EXIT
 sed -e 's/effect_input.audio_yoga/effect_input.audio_yoga_prova/; s/effect_output.audio_yoga/effect_output.audio_yoga_prova/' \
-    -e 's/target.object = "effect_input.yoga_spk"/target.object = "prova_nullo"/' -e 's/"Audio Yoga"/"Audio Yoga prova"/' \
+    -e 's/target.object = "effect_input.yoga_spk_ay"/target.object = "prova_nullo"/' -e 's/"Audio Yoga"/"Audio Yoga prova"/' \
     "$qui/audio-yoga.conf" > "$t/prova.conf"
 trova() { pw-cli ls Node 2>/dev/null | awk -v n="node.name = \"$1\"" '/^\tid /{i=$2} index($0, n){print i}' | tr -d ,; }
 timeout 5 pw-cli create-node adapter '{ factory.name=support.null-audio-sink node.name=prova_nullo media.class=Audio/Sink object.linger=true audio.position=[FL,FR] }' >/dev/null 2>&1
